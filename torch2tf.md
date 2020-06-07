@@ -11,8 +11,8 @@ torchvision.datasets.CIFAR10()|tf.keras.datasets.cifar10.load_data()|load build-
 torch.nn.CrossEntropyLoss()|tf.keras.losses.CategoricalCrossentropy()|compute crossentropy loss between labels and predictions|None
 troch.nn.MSELoss()|tf.keras.losses.MeanSquaredError()|compute mean of squares of errors between labels and predictions|None
 torch.nn.DataParallel()|tf.distribute.MirroredStrategy()|set data parallelism|use: `with tf.distribute.MirroredStrategy().scope()`
-torch.cat()|tf.concat|concatenates tensors along one dimension|None
+torch.cat()|tf.concat()|concatenates tensors along one dimension|None
 torch.FloatTensor()|tf.convert_to_tensor()|convert list or numpy array to tensor|None
 torch.Tensor.copy_|tf.identity()|copy one tensor|None
-torch.norm|tf.norm|compute the norm of vectors, matrices, and tensors|None
+torch.norm()|tf.norm()|compute the norm of vectors, matrices, and tensors|None
 torch.randn()|tf.random.normal()|output random values from normal distribution|None
