@@ -141,7 +141,7 @@ if __name__ == "__main__":
     l2_reg = regularizers.l2(l=0.0005)
 
     if model_type == 'vgg9_bn':
-        model_vgg9_bn = VGG9_BN(input_shape, l2_reg)
+        model_vgg9_bn = VGG9_BN(input_shape, None)
         model_save_path = './models/vgg9/vgg9_bn.h5'
         model_vgg9_bn.compile(optimizer=SGD(learning_rate=lr), loss='categorical_crossentropy', metrics=['accuracy'])
 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
         model_vgg9_bn.save(model_save_path)
 
     elif model_type == 'vgg9':
-        model_vgg9 = VGG9_no_BN(input_shape, None)
+        model_vgg9 = VGG9_no_BN(input_shape, l2_reg)
         model_save_path = './models/vgg9/vgg9.h5'
         model_vgg9.compile(optimizer=SGD(learning_rate=lr), loss='categorical_crossentropy', metrics=['accuracy'])
 

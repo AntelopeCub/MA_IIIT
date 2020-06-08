@@ -131,6 +131,7 @@ dmypy.json
 # local folder and files
 /toolkit
 *.drawio
+/test
 
 # vs and vscode
 /.vs
