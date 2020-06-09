@@ -132,6 +132,7 @@ dmypy.json
 /toolkit
 *.drawio
 /test
+*.rar
 
 # vs and vscode
 /.vs
