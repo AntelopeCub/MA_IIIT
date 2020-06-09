@@ -40,6 +40,8 @@ if __name__ == "__main__":
 
     f = h5py.File(dir_path, 'w')
 
+    tf.random.set_seed(123)
+
     xdirection = creat_random_direction(model)
 
     h5_util.write_list(f, 'xdirection', xdirection)
