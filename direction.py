@@ -36,15 +36,20 @@ if __name__ == "__main__":
 
     model = load_model(model_path)
 
-    dir_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/directions/vgg9_sgd_lr=0.1_bs=128_wd=0.0_epochs=15_weights.h5"
+    dir_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/directions/vgg9_sgd_lr=0.1_bs=128_wd=0.0_epochs=15_weights_2D.h5"
 
     f = h5py.File(dir_path, 'w')
 
     tf.random.set_seed(123)
 
-    xdirection = creat_random_direction(model)
+    set_y = True
 
+    xdirection = creat_random_direction(model)
     h5_util.write_list(f, 'xdirection', xdirection)
+
+    if set_y:
+        ydirection = creat_random_direction(model)
+        h5_util.write_list(f, 'ydirection', ydirection)
 
     f.close()
     print("direction file created")

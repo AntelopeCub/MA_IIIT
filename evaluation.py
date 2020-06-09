@@ -10,29 +10,43 @@ import numpy as np
 import tensorflow as tf
 import time
 
-def setup_surface_file(surf_path, dir_path):
+def setup_surface_file(surf_path, dir_path, set_y, num=51):
 
     f = h5py.File(surf_path, 'a')
     f['dir_path'] = dir_path
 
-    xcoordinates = np.linspace(-1, 1, num=51)
+    xcoordinates = np.linspace(-1, 1, num=num)
     f['xcoordinates'] = xcoordinates
+
+    if set_y:
+        ycoordinates = np.linspace(-1, 1, num=num)
+        f['ycoordinates'] = ycoordinates
 
     f.close()
 
 def load_directions(dir_path):
     f = h5py.File(dir_path, 'r')
 
-    if 'xdirection' in f.keys():
-        directions_data = h5_util.read_list(f, 'xdirection')
-        directions = [[tf.convert_to_tensor(data) for data in directions_data]]
+    xdirections_data = h5_util.read_list(f, 'xdirection')
+    if 'ydirection' in f.keys():
+        ydirections_data = h5_util.read_list(f, 'ydirection')
+        xdirections = [tf.convert_to_tensor(xdata) for xdata in xdirections_data]
+        ydirections = [tf.convert_to_tensor(ydata) for ydata in ydirections_data]
+        directions = [xdirections, ydirections]
+    else:
+        directions = [[tf.convert_to_tensor(xdata) for xdata in xdirections_data]]
 
     f.close()
     return directions
 
 def set_weights(model, weights, directions=None, step=None):
-    
-    changes = [d*step for d in directions[0]]
+
+    if len(directions) == 2:
+        dx = directions[0]
+        dy = directions[1]
+        changes = [d0*step[0] + d1*step[1] for (d0, d1) in zip(dx, dy)]
+    else:
+        changes = [d*step for d in directions[0]]
 
     for idx in range(len(weights)):
         model.weights[idx].assign(w[idx] + tf.convert_to_tensor(changes[idx]))
@@ -46,9 +60,10 @@ def crunch(surf_path, model, w, d, x_train_list, y_train_list, loss_key, acc_key
     f = h5py.File(surf_path, 'r+')
     losses, accuracies = [], []
     xcoordinates = f['xcoordinates'][:]
+    ycoordinates = f['ycoordinates'][:] if 'ycoordinates' in f.keys() else None
 
     if loss_key not in f.keys():
-        shape = xcoordinates.shape
+        shape = xcoordinates.shape if ycoordinates is None else (len(xcoordinates),len(ycoordinates))
         losses = -np.ones(shape=shape)
         accuracies = -np.ones(shape=shape)
         f[loss_key] = losses
@@ -58,15 +73,30 @@ def crunch(surf_path, model, w, d, x_train_list, y_train_list, loss_key, acc_key
 
     start_time = time.time()
 
-    for idx, coord in enumerate(xcoordinates):
-        set_weights(model, w, d, coord)
-        loss, acc = eval_loss(model, cce, x_train_list, y_train_list, batch_size)
-        losses[idx] = loss
-        accuracies[idx] = acc
+    if ycoordinates is not None:
+        xcoord_mesh, ycoord_mesh = np.meshgrid(xcoordinates, ycoordinates)
+        s1 = xcoord_mesh.ravel()
+        s2 = ycoord_mesh.ravel()
+        for idx, coord in enumerate(np.c_[s1,s2]):
+            set_weights(model, w, d, coord)
+            loss, acc = eval_loss(model, cce, x_train_list, y_train_list, batch_size)
+            losses.ravel()[idx] = loss
+            accuracies.ravel()[idx] = acc
 
-        f[loss_key][:] = losses
-        f[acc_key][:] = accuracies
-        f.flush()
+            f[loss_key][:] = losses
+            f[acc_key][:] = accuracies
+            f.flush()
+
+    else:
+        for idx, coord in enumerate(xcoordinates):
+            set_weights(model, w, d, coord)
+            loss, acc = eval_loss(model, cce, x_train_list, y_train_list, batch_size)
+            losses.ravel()[idx] = loss
+            accuracies.ravel()[idx] = acc
+
+            f[loss_key][:] = losses
+            f[acc_key][:] = accuracies
+            f.flush()
 
     f.close()
     total_time = time.time() - start_time
@@ -80,15 +110,17 @@ if __name__ == "__main__":
         tf.config.experimental.set_memory_growth(gpu, True)
 
     model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_sgd_lr=0.1_bs=128_wd=0.0_epochs=15.h5"
-    dir_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/directions/vgg9_sgd_lr=0.1_bs=128_wd=0.0_epochs=15_weights.h5"
-    surf_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/surface/vgg9_sgd_lr=0.1_bs=128_wd=0.0_epochs=15_surface.h5"
+    dir_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/directions/vgg9_sgd_lr=0.1_bs=128_wd=0.0_epochs=15_weights_2D.h5"
+    surf_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/surface/vgg9_sgd_lr=0.1_bs=128_wd=0.0_epochs=15_surface_2D.h5"
     batch_size = 128
 
     model = tf.keras.models.load_model(model_path)
     w = direction.get_weights(model)
     d = load_directions(dir_path)
 
-    setup_surface_file(surf_path, dir_path)
+    set_y = True
+
+    setup_surface_file(surf_path, dir_path, set_y, num=11)
 
     x_train_list, y_train_list = data_loader.load_data(batch_size=-1)
 
