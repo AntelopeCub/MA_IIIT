@@ -54,4 +54,4 @@ def plot_1d_loss_err(surf_path, xmin=-1.0, xmax=1.0, loss_max=5, log=False, show
 if __name__ == "__main__":
     surf_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/surface/vgg9_sgd_lr=0.1_bs=128_wd=0.0_epochs=15_surface.h5"
 
-    plot_1d_loss_err(surf_path, xmin=-1.0, xmax=1.0, loss_max=5, log=True, show=True)
+    plot_1d_loss_err(surf_path, xmin=-1.0, xmax=1.0, loss_max=5, log=False, show=True)
