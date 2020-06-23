@@ -24,7 +24,7 @@ def main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=11):
     h5_util.write_list(f, 'xdirection', xdirection)
 
     if fig_type == '2D':
-        ydirection = creat_random_direction(model)
+        ydirection = direction.creat_random_direction(model)
         h5_util.write_list(f, 'ydirection', ydirection)
         set_y = True
     else:
@@ -61,11 +61,11 @@ if __name__ == "__main__":
 
     tf.random.set_seed(123)
 
-    model_type = 'vgg9'
+    model_type = 'vgg9_bn'
     model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/" + model_type + '.h5'
     dataset = 'cifar10'
     load_mode = 'tfds'
-    train_model = True
+    train_model = False
     batch_size = 128
     add_aug = True
     aug_pol = 'baseline'
@@ -76,8 +76,8 @@ if __name__ == "__main__":
         model.train_model(batch_size=batch_size, load_mode=load_mode, add_aug=add_aug, aug_pol=aug_pol, plot_history=plot_history)
         model.model.save(model_path)
 
-    fig_type = '1D'
-    dot_num = 51
+    fig_type = '2D'
+    dot_num = 11
     
-    #main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=dot_num)
+    main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=dot_num)
 

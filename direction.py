@@ -24,7 +24,16 @@ def get_random_weights(weights):
 
 def normalize_directions_for_weights(direction, weights):
     assert(len(direction) == len(weights))
-    return [(d * tf.norm(w) / (tf.norm(d) + 1e-10)) for d, w in zip(direction, weights)]
+    norm_direction = []
+    for d, w in zip(direction, weights):
+        if len(d.shape) <= 1:
+            norm_direction.append(tf.zeros_like(d))
+        else:
+            norm_direction.append(normalize_direction(d, w))
+    return norm_direction
+
+def normalize_direction(d, w):
+    return (d * tf.norm(w) / (tf.norm(d) + 1e-10))
 
 if __name__ == "__main__":
 
