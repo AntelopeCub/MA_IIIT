@@ -2,6 +2,7 @@ import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
+from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -170,7 +171,7 @@ class build_model(object):
         elif model_type == 'vgg9_bn':
             self.model = VGG9_BN(self.input_shape, self.l2_reg, num_class=self.num_class)
 
-    def train_model(self, learning_rate=0.1, batch_size=128, epochs=20, load_mode='tfds', plot_history=False, add_aug=False, aug_pol='baseline'):
+    def train_model(self, learning_rate=0.1, batch_size=128, epochs=20, load_mode='tfds', plot_history=False, add_aug=False, aug_pol='baseline', callbacks=None):
         
         x_train, y_train, x_test, y_test = data_loader.load_data(self.dataset, load_mode=load_mode)
         if add_aug:
@@ -183,11 +184,17 @@ class build_model(object):
 
         if 'vgg' in self.model_type:
             self.optimizer = SGD(learning_rate=learning_rate)
-            self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+            self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])            
+            '''
+            logs = ".\logs\log" + datetime.now().strftime("%Y%m%d-%H%M%S")
+            tboard_callback = tf.keras.callbacks.TensorBoard(log_dir = logs,
+                                                            histogram_freq = 1,
+                                                            profile_batch = 1)
+            '''
             if not add_aug:
-                self.history = self.model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epochs, batch_size=batch_size)
+                self.history = self.model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epochs, batch_size=batch_size, callbacks=callbacks)
             else:
-                self.history = self.model.fit(train_gen.flow(), validation_data=(x_test, y_test), epochs=epochs)
+                self.history = self.model.fit(train_gen, validation_data=(x_test, y_test), epochs=epochs, steps_per_epoch=len(train_gen), callbacks=callbacks)
             if plot_history:
                 plot_result(self.history)
 
@@ -196,9 +203,9 @@ class build_model(object):
             self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
             callback = LearningRateScheduler(lr_decay)
             if not add_aug:
-                self.history = self.model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epochs, batch_size=batch_size, callbacks=[callback])
+                self.history = self.model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epochs, batch_size=batch_size, callbacks=callbacks)
             else:
-                self.history = self.model.fit(train_gen.flow(), validation_data=(x_test, y_test), epochs=epochs, callbacks=[callback])
+                self.history = self.model.fit(train_gen, validation_data=(x_test, y_test), epochs=epochs, steps_per_epoch=len(train_gen), callbacks=callbacks)
             if plot_history:
                 plot_result(self.history)
 

@@ -133,6 +133,7 @@ dmypy.json
 *.drawio
 /test
 *.rar
+/logs
 
 # vs and vscode
 /.vs

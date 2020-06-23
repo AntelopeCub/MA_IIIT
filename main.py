@@ -36,11 +36,13 @@ def main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=11):
     surf_path = dir_path[:-3] + '_surface.h5'
 
     w = direction.get_weights(model)
-    d = load_directions(dir_path)
+    d = evaluation.load_directions(dir_path)
 
     evaluation.setup_surface_file(surf_path, dir_path, set_y, num=dot_num)
 
-    x_train, y_train = data_loader.load_data(dataset, load_mode=load_mode)
+    x_train, y_train, _, _ = data_loader.load_data(dataset, load_mode=load_mode)
+
+    x_train = x_train / 255.0
 
     evaluation.crunch(surf_path, model, w, d, x_train, y_train, 'train_loss', 'train_acc', batch_size)
 
@@ -51,28 +53,31 @@ def main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=11):
 
 if __name__ == "__main__":
     
+    '''
     gpus = tf.config.experimental.list_physical_devices('GPU') #should limit gpu memory growth when using cuda.
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
+    '''
 
     tf.random.set_seed(123)
 
     model_type = 'vgg9'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9.h5"
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/" + model_type + '.h5'
     dataset = 'cifar10'
-    load_model = 'path'
+    load_mode = 'tfds'
     train_model = True
     batch_size = 128
-    add_aug = False
+    add_aug = True
     aug_pol = 'baseline'
+    plot_history = True
 
     if train_model == True:
         model = build_model(model_type, dataset)
-        model.train_model(batch_size=batch_size, load_mode=load_mode, add_aug=add_aug, aug_pol=aug_pol)
+        model.train_model(batch_size=batch_size, load_mode=load_mode, add_aug=add_aug, aug_pol=aug_pol, plot_history=plot_history)
         model.model.save(model_path)
 
     fig_type = '1D'
-    dot_num = 11
+    dot_num = 51
     
-    main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=dot_num)
+    #main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=dot_num)
 
