@@ -10,8 +10,8 @@ import tensorflow.keras as keras
 from tensorflow.keras.applications import VGG16, ResNet50
 from tensorflow.keras.applications.vgg16 import preprocess_input
 from tensorflow.keras.datasets import cifar10
-from tensorflow.keras.layers import InputLayer, Conv2D, Dense, BatchNormalization, Flatten, MaxPooling2D
-from tensorflow.keras.models import Sequential
+#from tensorflow.keras.layers import InputLayer, Conv2D, Dense, BatchNormalization, Flatten, MaxPooling2D
+#from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras import regularizers
 #from tensorflow.keras.preprocessing import image
@@ -19,97 +19,10 @@ from tensorflow.keras.callbacks import LearningRateScheduler
 
 import data_loader
 import data_generator
+from build_vgg import VGG9_BN, VGG9_no_BN
+from build_resnet import ResNet56
 
-def VGG16_BN(input_shape, l2_reg, num_class=10):
-    model = Sequential()
-    model.add(Conv2D(64, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg, input_shape=input_shape))
-    model.add(BatchNormalization())
-    model.add(Conv2D(64, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D())
-    model.add(Conv2D(128, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Conv2D(128, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D())
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D())
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D())
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D())
-    model.add(Flatten())
-    model.add(Dense(512, activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Dense(512, activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Dense(num_class, activation='softmax'))
-    return model
 
-def VGG9_no_BN(input_shape, l2_reg, num_class=10):
-    model = Sequential()
-    model.add(Conv2D(64, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg, input_shape=input_shape))
-    #model.add(BatchNormalization())
-    model.add(Conv2D(64, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    #model.add(BatchNormalization())
-    model.add(MaxPooling2D())
-    model.add(Conv2D(128, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    #model.add(BatchNormalization())
-    model.add(Conv2D(128, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    #model.add(BatchNormalization())
-    model.add(MaxPooling2D())
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    #model.add(BatchNormalization())
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    #model.add(BatchNormalization())
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    #model.add(BatchNormalization())
-    model.add(MaxPooling2D())
-    model.add(Flatten())
-    model.add(Dense(256, activation='relu', kernel_regularizer=l2_reg))
-    #model.add(BatchNormalization())
-    model.add(Dense(num_class, activation='softmax'))
-    return model
-
-def VGG9_BN(input_shape, l2_reg, num_class=10):
-    model = Sequential()
-    model.add(Conv2D(64, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg, input_shape=input_shape))
-    model.add(BatchNormalization())
-    model.add(Conv2D(64, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D())
-    model.add(Conv2D(128, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Conv2D(128, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D())
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D())
-    model.add(Flatten())
-    model.add(Dense(256, activation='relu', kernel_regularizer=l2_reg))
-    model.add(BatchNormalization())
-    model.add(Dense(num_class, activation='softmax'))
-    return model
 
 def lr_decay(epoch):
     init_lr = 0.01
@@ -201,7 +114,7 @@ class build_model(object):
         elif 'resnet' in self.model_type:
             self.optimizer = SGD(learning_rate=learning_rate, momentum=0.9, nesterov=True)
             self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
-            callback = LearningRateScheduler(lr_decay)
+            callback = [LearningRateScheduler(lr_decay)]
             if not add_aug:
                 self.history = self.model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epochs, batch_size=batch_size, callbacks=callbacks)
             else:

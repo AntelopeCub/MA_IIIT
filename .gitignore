@@ -134,6 +134,7 @@ dmypy.json
 /test
 *.rar
 /logs
+*.ipynb
 
 # vs and vscode
 /.vs
