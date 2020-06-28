@@ -22,8 +22,8 @@ def load_data(dataset, load_mode='tfds'):
         train_data, test_data = tfds.load(name=dataset, split=['train', 'test'], batch_size=-1, shuffle_files=True)
         train_data = tfds.as_numpy(train_data)
         test_data = tfds.as_numpy(test_data)
-        x_train_list = train_data['image'].astype('float32')
-        x_test_list = test_data['image'].astype('float32')
+        x_train_list = train_data['image']
+        x_test_list = test_data['image']
         y_train_list = tf.keras.utils.to_categorical(train_data['label'])
         y_test_list = tf.keras.utils.to_categorical(test_data['label'])
 
@@ -47,8 +47,8 @@ def load_data(dataset, load_mode='tfds'):
             y_test_list.extend([idx for i in range(len(data_imgs))])
         gc.enable()
 
-        x_train_list = np.array(x_train_list, dtype=np.float32)
-        x_test_list = np.array(x_test_list, dtype=np.float32)
+        x_train_list = np.asarray(x_train_list, dtype=np.uint8)
+        x_test_list = np.asarray(x_test_list, dtype=np.uint8)
         y_train_list = tf.keras.utils.to_categorical(y_train_list)
         y_test_list = tf.keras.utils.to_categorical(y_test_list)
         x_train_list, y_train_list, x_test_list, y_test_list = shuffle_data(x_train_list, y_train_list, x_test_list, y_test_list)
@@ -66,30 +66,6 @@ def shuffle_data(x_train_list, y_train_list, x_test_list, y_test_list):
     y_test_list = y_test_list[test_shuffle]
     return x_train_list, y_train_list, x_test_list, y_test_list
 
-
-'''
-def load_data(batch_size=128):
-    x_train_list = []
-    y_train_list = []
-    train_data, test_data = tfds.load(name='cifar10', split=['train', 'test'], batch_size=batch_size, shuffle_files=False)
-
-    if batch_size != -1:
-        for data in tfds.as_numpy(train_data):
-            data_tmp = data['image'].astype('float32') / 255
-            data_tmp_mean = np.mean(data_tmp, axis=0)
-            data_tmp -= data_tmp_mean
-            x_train_list.append(data_tmp)
-            y_train_list.append(tf.keras.utils.to_categorical(data['label'], 10))
-    else:
-        data = tfds.as_numpy(train_data)
-        data_tmp = data['image'].astype('float32') / 255
-        data_tmp_mean = np.mean(data_tmp, axis=0)
-        data_tmp -= data_tmp_mean
-        x_train_list = data_tmp
-        y_train_list = tf.keras.utils.to_categorical(data['label'], 10)
-
-    return x_train_list, y_train_list
-'''
 
 if __name__ == "__main__":
 

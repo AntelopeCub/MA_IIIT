@@ -65,15 +65,16 @@ if __name__ == "__main__":
     model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/" + model_type + '.h5'
     dataset = 'cifar10'
     load_mode = 'tfds'
-    train_model = False
+    train_model = True
     batch_size = 128
     add_aug = True
     aug_pol = 'baseline'
     plot_history = True
+    workers = 1
 
     if train_model == True:
         model = build_model(model_type, dataset)
-        model.train_model(batch_size=batch_size, load_mode=load_mode, add_aug=add_aug, aug_pol=aug_pol, plot_history=plot_history)
+        model.train_model(batch_size=batch_size, load_mode=load_mode, add_aug=add_aug, aug_pol=aug_pol, plot_history=plot_history, workers=workers)
         model.model.save(model_path)
 
     fig_type = '2D'
