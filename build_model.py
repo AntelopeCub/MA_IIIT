@@ -83,7 +83,7 @@ class build_model(object):
         elif model_type == 'vgg9_bn':
             self.model = VGG9_BN(self.input_shape, self.l2_reg, num_class=self.num_class)
 
-    def train_model(self, learning_rate=0.1, batch_size=128, epochs=20, load_mode='tfds', plot_history=False, add_aug=False, aug_pol='baseline', callbacks=None, workers=1, use_multiprocessing=False):
+    def train_model(self, learning_rate=0.1, batch_size=128, epochs=20, load_mode='tfds', plot_history=False, add_aug=False, aug_pol='baseline', callbacks=None, workers=1):
         
         x_train, y_train, x_test, y_test = data_loader.load_data(self.dataset, load_mode=load_mode)
         if add_aug:

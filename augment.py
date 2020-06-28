@@ -2,8 +2,9 @@ import numpy as np
 import PIL
 import tensorflow as tf
 import tensorflow_addons as tfa
-from PIL import ImageOps
-from tensorflow.keras.preprocessing.image import random_rotation, random_shift
+from PIL import Image, ImageDraw, ImageEnhance, ImageOps
+
+#from tensorflow.keras.preprocessing.image import random_rotation, random_shift
 
 
 def add_augment(img, policy):
@@ -29,17 +30,17 @@ def add_augment(img, policy):
         elif p['op'] == '180':
             img = np.fliplr(np.flipud(img))
         
-        #crop
+        #crop 
         elif p['op'] == 'crp':
+            img = Image.fromarray(img)
             mag = p['mag'] / 10.0 * np.random.uniform(0.0, 1.0)
-            zoom = np.random.uniform(0.25 + 0.75*(1-mag) -1e-6, 1+1e-6)
-            h1 = np.random.uniform(0, np.random.uniform(1e-6, 1-zoom+1e-4))
-            w1 = np.random.uniform(0, np.random.uniform(1e-6, 1-zoom+1e-4))
-            h2 = h1 + zoom
-            w2 = w1 + zoom
-            img = np.expand_dims(img, axis=0)
-            img = tf.image.crop_and_resize(img, [[h1, w1, h2, w2]], [0], (shape[1], shape[0]))
-            img = np.asarray(img[0], dtype=np.uint8)
+            zoom = np.random.uniform(0.25 + 0.75*(1-mag)-1e-6, 1+1e-6)
+            left = np.random.uniform(0, shape[1]*np.random.uniform(1e-6, 1-zoom+1e-4)) #left
+            upper = np.random.uniform(0, shape[0]*np.random.uniform(1e-6, 1-zoom+1e-4)) #upper
+            right = left + zoom * shape[1] #right
+            lower = upper + zoom * shape[0] #lower
+            img = img.crop((left, upper, right, lower))
+            img = img.resize((shape[1], shape[0]), resample=Image.BICUBIC)
 
         #cutout
         elif p['op'] == 'ct1':
@@ -49,23 +50,21 @@ def add_augment(img, policy):
                 pxls = (np.random.randint(shape[0]-blob[1]-1), np.random.randint(shape[1]-blob[0]-1))
                 if shape[2] == 3:
                     blob = np.append(blob, [3])
-                noise = PIL.Image.fromarray(np.clip(np.random.randint(255, size=blob),0,255).astype('uint8'))
-                img = PIL.Image.fromarray(np.asarray(img, dtype=np.uint8))
+                noise = Image.fromarray(np.clip(np.random.randint(255, size=blob),0,255).astype('uint8'))
+                img = Image.fromarray(img)
                 img.paste(noise, pxls)
-                img = np.asarray(img)
+                #img = np.asarray(img)
 
         elif p['op'] == 'ct2':
+            img = Image.fromarray(img)
             rand = np.random.uniform(0, 1, 2)
             blob = (np.array([rand[1]*shape[1], rand[1]*(0.5+rand[0])*shape[0]]) * p['mag']/20.).astype('int')
             if blob[1]*blob[0] != 0:
-                img = np.expand_dims(img, axis=0)
-                if blob[0] % 2 != 0:
-                    blob[0] += 1
-                if blob[1] % 2 != 0:
-                    blob[1] += 1
-                pxls = (np.random.randint(blob[1] // 2, shape[0]-blob[1] // 2), np.random.randint(blob[0] // 2, shape[1]-blob[0] // 2))
-                img = tfa.image.cutout(img, mask_size=(blob[0], blob[1]), offset=(pxls[1], pxls[0]), constant_values=fcol_int)
-                img = img[0]
+                pxls = (np.random.randint(shape[0]-blob[1]-1), np.random.randint(shape[1]-blob[0]-1))
+                if img.mode == 'RGB':
+                    blob = np.append(blob, [3])
+                draw = ImageDraw.Draw(img)
+                draw.rectangle([pxls[0], pxls[1], pxls[0]+blob[1], pxls[1]+blob[0]], fill=tuple(fcol))
 
         #invert
         elif p['op'] == 'inv':
@@ -73,80 +72,83 @@ def add_augment(img, policy):
 
         #rotation
         elif p['op'] == 'rot':
-            angle = 45 * p['mag'] / 10.
-            img = random_rotation(img, angle, row_axis=0, col_axis=1, channel_axis=2, fill_mode='constant', cval=fcol_int, interpolation_order=3)
+            img = Image.fromarray(img)
+            angle = np.random.uniform(-45, 45) * p['mag'] / 10.
+            img = img.rotate(angle, resample=Image.BICUBIC, fillcolor=tuple(fcol))
 
         #sharpness
         elif p['op'] == 'sha':
-            if not isinstance(img, tf.Tensor):
-                img = tf.convert_to_tensor(img)
+            img = Image.fromarray(img)
             enha  = 1 + np.random.uniform(-1, 1) * p['mag'] / 10.
-            img = tfa.image.sharpness(img, enha)
-
+            img = ImageEnhance.Sharpness(img).enhance(enha)
+        
         #shear
         elif p['op'] == 'srx':
-            #img = np.asarray(img, dtype=np.uint8)
+            img = Image.fromarray(img)
             shear = np.random.uniform(-0.5, 0.5) * p['mag'] / 10.
-            img = tfa.image.shear_x(img, shear, fcol)
+            img = img.transform((shape[0], shape[1]), Image.AFFINE, (1, shear, 0, 0, 1, 0), resample=Image.BICUBIC, fillcolor=tuple(fcol))
         elif p['op'] == 'sry':
-            #img = np.asarray(img, dtype=np.uint8)
+            img = Image.fromarray(img)
             shear = np.random.uniform(-0.5, 0.5) * p['mag'] / 10.
-            img = tfa.image.shear_y(img, shear, fcol)
-
+            img = img.transform((shape[0], shape[1]), Image.AFFINE, (1, 0, 0, shear, 1, 0), resample=Image.BICUBIC, fillcolor=tuple(fcol))
+        
         #autocontrast
         elif p['op'] == 'auc':
-            img = PIL.Image.fromarray(np.asarray(img, dtype=np.uint8))
+            img = Image.fromarray(img)
             img = ImageOps.autocontrast(img, cutoff=2)
-            img = np.asarray(img)
-        
+
         #contrast
         elif p['op'] == 'con':
+            img = Image.fromarray(img)
             enha = 1 + np.random.uniform(-1, 1) * p['mag'] / 10.
-            img = tf.image.adjust_contrast(img, enha)
-
+            img = ImageEnhance.Contrast(img).enhance(enha)
+        
         #saturation
         elif p['op'] == 'clr':
+            img = Image.fromarray(img)
             enha = 1 + np.random.uniform(-1, 1) * p['mag'] / 10.
-            img = tf.image.adjust_saturation(img, enha)
+            img = ImageEnhance.Color(img).enhance(enha)
 
         #brightness
         elif p['op'] == 'bri':
+            img = Image.fromarray(img)
             enha = 1 + np.random.uniform(-1, 1) * p['mag'] / 10.
-            img = tf.image.adjust_brightness(img, enha)
+            img = ImageEnhance.Brightness(img).enhance(enha)
         
-        #equaliz
+        #equalize
         elif p['op'] == 'eqz':
-            if not isinstance(img, tf.Tensor):
-                img = tf.convert_to_tensor(img)
-            img = tfa.image.equalize(img)
+            img = Image.fromarray(img)
+            img = ImageOps.equalize(img)
 
         #translation
         elif p['op'] == 'tlx':
+            img = Image.fromarray(img)
             shift = np.random.uniform(-0.5, 0.5) * p['mag'] / 10.
-            img = random_shift(img, shift, 0, row_axis=0, col_axis=1, channel_axis=2, fill_mode='constant', cval=fcol_int, interpolation_order=3)
+            img = img.transform((shape[0], shape[1]), Image.AFFINE, (1, 0, shift, 0, 1, 0), resample=Image.BICUBIC, fillcolor=tuple(fcol))
         elif p['op'] == 'tly':
+            img = Image.fromarray(img)
             shift = np.random.uniform(-0.5, 0.5) * p['mag'] / 10.
-            img = random_shift(img, 0, shift, row_axis=0, col_axis=1, channel_axis=2, fill_mode='constant', cval=fcol_int, interpolation_order=3)
+            img = img.transform((shape[0], shape[1]), Image.AFFINE, (1, 0, 0, 0, 1, shift), resample=Image.BICUBIC, fillcolor=tuple(fcol))
 
         #solarize
         elif p['op'] == 'sol':
             th = int(256 * (1 - np.random.uniform(0, 1) * p['mag'] / 10.))
-            img = PIL.Image.fromarray(np.asarray(img, dtype=np.uint8))
+            img = Image.fromarray(img)
             if np.random.rand() - 0.5 > 0:
                 img = ImageOps.solarize(img, threshold=th)
             else:
                 img = ImageOps.invert(img)
                 img = ImageOps.solarize(img, threshold=th)
                 img = ImageOps.invert(img)
-            img = np.asarray(img)
 
         #posterize
         elif p['op'] == 'pos':
             bit = int(8.5 - np.random.uniform(0, 0.5) * p['mag'])
-            img = PIL.Image.fromarray(np.asarray(img, dtype=np.uint8))
+            img = Image.fromarray(img)
             img = ImageOps.posterize(img, bit)
-            img = np.asarray(img)
 
+        
+        img = np.asarray(img, dtype=np.uint8)
 
     return img
 
