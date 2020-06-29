@@ -6,15 +6,17 @@ import h5py
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 
-from build_model import build_model
+import data_generator
 import data_loader
 import direction
 import evaluation
 import h5_util
 import plot_1D
 import plot_2D
+from build_model import build_model
 
-def main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=11):
+
+def main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=11, add_aug=False, aug_pol='baseline'):
     
     model = load_model(model_path)
     dir_path = model_path[:-3] + '_' + fig_type + '.h5'
@@ -40,9 +42,14 @@ def main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=11):
 
     evaluation.setup_surface_file(surf_path, dir_path, set_y, num=dot_num)
 
-    x_train, y_train, _, _ = data_loader.load_data(dataset, load_mode=load_mode)
-
-    x_train = x_train / 255.0
+    if not add_aug:
+        x_train, y_train, _, _ = data_loader.load_data(dataset, load_mode=load_mode)
+        x_train = x_train / 255.0
+    else:
+        print("Load temp dataset.")
+        temp_file_path = data_generator.set_temp_dataset(dataset, load_mode, aug_pol)
+        x_train, y_train = data_generator.load_temp_dataset(temp_file_path)
+        print("Temp dataset loaded.")
 
     evaluation.crunch(surf_path, model, w, d, x_train, y_train, 'train_loss', 'train_acc', batch_size)
 
@@ -53,19 +60,19 @@ def main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=11):
 
 if __name__ == "__main__":
     
-    '''
-    gpus = tf.config.experimental.list_physical_devices('GPU') #should limit gpu memory growth when using cuda.
+    
+    gpus = tf.config.experimental.list_physical_devices('GPU') #should limit gpu memory growth while using cuda.
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
-    '''
+    
 
     tf.random.set_seed(123)
 
     model_type = 'vgg9_bn'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/" + model_type + '.h5'
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_bn_aug.h5"
     dataset = 'cifar10'
     load_mode = 'tfds'
-    train_model = True
+    train_model = False
     batch_size = 128
     add_aug = True
     aug_pol = 'baseline'
@@ -78,7 +85,6 @@ if __name__ == "__main__":
         model.model.save(model_path)
 
     fig_type = '2D'
-    dot_num = 11
+    dot_num = 21
     
-    main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=dot_num)
-
+    main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=dot_num, add_aug=add_aug, aug_pol=aug_pol)

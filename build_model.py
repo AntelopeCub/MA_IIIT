@@ -3,24 +3,20 @@ import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 from datetime import datetime
+
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
-from tensorflow.keras.applications import VGG16, ResNet50
-from tensorflow.keras.applications.vgg16 import preprocess_input
-from tensorflow.keras.datasets import cifar10
-#from tensorflow.keras.layers import InputLayer, Conv2D, Dense, BatchNormalization, Flatten, MaxPooling2D
-#from tensorflow.keras.models import Sequential
-from tensorflow.keras.optimizers import SGD
 from tensorflow.keras import regularizers
-#from tensorflow.keras.preprocessing import image
 from tensorflow.keras.callbacks import LearningRateScheduler
+from tensorflow.keras.datasets import cifar10
+from tensorflow.keras.optimizers import SGD
 
-import data_loader
 import data_generator
-from build_vgg import VGG9_BN, VGG9_no_BN
+import data_loader
 from build_resnet import ResNet56
+from build_vgg import VGG9_BN, VGG9_no_BN, VGG16_BN
 
 
 def lr_decay(epoch):
@@ -82,6 +78,8 @@ class build_model(object):
             self.model = VGG9_no_BN(self.input_shape, self.l2_reg, num_class=self.num_class)
         elif model_type == 'vgg9_bn':
             self.model = VGG9_BN(self.input_shape, self.l2_reg, num_class=self.num_class)
+        elif model_type == 'vgg16_bn':
+            self.model = VGG16_BN(self.input_shape, self.l2_reg, num_class=self.num_class)
 
     def train_model(self, learning_rate=0.1, batch_size=128, epochs=20, load_mode='tfds', plot_history=False, add_aug=False, aug_pol='baseline', callbacks=None, workers=1):
         

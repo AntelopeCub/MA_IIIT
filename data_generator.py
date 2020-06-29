@@ -1,11 +1,17 @@
 import math
 import operator
+import os
+import random
+import string
 import threading
 
+import h5py
 import numpy as np
 import tensorflow as tf
 
-from augment import get_policies, add_augment
+import data_loader
+import h5_util
+from augment import add_augment, get_policies
 
 
 class Image_Generator(tf.keras.utils.Sequence):
@@ -63,3 +69,59 @@ class Image_Generator(tf.keras.utils.Sequence):
         self.x_set = self.x_set[shuffle_list]
         self.y_set = self.y_set[shuffle_list]
         
+def set_temp_dataset(dataset, load_mode, aug_pol):
+    x_train, y_train, _, _ = data_loader.load_data(dataset, load_mode=load_mode)
+    shuffle_list = np.arange(x_train.shape[0])
+    np.random.shuffle(shuffle_list)
+    x_train = x_train[shuffle_list]
+    y_train = y_train[shuffle_list]
+
+    if aug_pol == 'baseline':
+        policy_list = ['reduced_mirror',  'crop', 'cutout']
+    elif aug_pol == 'cifar_pol':
+        policy_list = ['cifar_pol1', 'cifar_pol2']
+
+    policies = [get_policies(policy) for policy in policy_list]
+    probs = []
+    for policy in policies:
+        probs.append([p.get('prob') for p in policy])
+    
+    new_policies = []
+    for p_idx in range(len(policies)):
+        choose = np.random.choice(range(len(policies[p_idx])), len(x_train), p=probs[p_idx])
+        new_policies.append(operator.itemgetter(*choose)(policies[p_idx]))
+    
+    x_train_aug = []
+    for idx in range(len(x_train)):
+        x = np.copy(x_train[idx])
+        new_policy = [p[idx] for p in new_policies]
+        x = add_augment(x, new_policy)
+        x = np.asarray(x, dtype=np.float32) / 255.0
+        x_train_aug.append(x)
+
+    temp_file_name = 'temp_' + dataset + '_' + aug_pol + '_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
+    temp_file_path = './models/' + temp_file_name
+
+    f = h5py.File(temp_file_path, 'w')
+    h5_util.write_list(f, 'x_train', x_train_aug)
+    h5_util.write_list(f, 'y_train', y_train)
+
+    f.close()
+
+    return temp_file_path
+
+def load_temp_dataset(temp_file_path):
+    f = h5py.File(temp_file_path, 'r')
+
+    x_train = h5_util.read_list(f, 'x_train')
+    x_train = [np.asarray(x_data, dtype='float32') for x_data in x_train]
+    y_train = h5_util.read_list(f, 'y_train')
+    y_train = [np.asarray(y_data, dtype='float32') for y_data in y_train]
+
+    x_train = np.asarray(x_train)
+    y_train = np.asarray(y_train)
+
+    f.close()
+    os.remove(temp_file_path)
+
+    return x_train, y_train
