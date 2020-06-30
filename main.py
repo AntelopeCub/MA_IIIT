@@ -16,9 +16,14 @@ import plot_2D
 from build_model import build_model
 
 
-def main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=11, add_aug=False, aug_pol='baseline'):
+def main(model_type, model_path, batch_size, dataset, load_mode, fig_type, dot_num=11, add_aug=False, aug_pol='baseline'):
     
-    model = load_model(model_path)
+    try:
+        model = load_model(model_path)
+    except Exception as e:
+        model = build_model(model_type, dataset).model
+        model.load_weights(model_path)
+    
     dir_path = model_path[:-3] + '_' + fig_type + '.h5'
     f = h5py.File(dir_path, 'w')
 
@@ -50,6 +55,8 @@ def main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=11, add_a
         temp_file_path = data_generator.set_temp_dataset(dataset, load_mode, aug_pol)
         x_train, y_train = data_generator.load_temp_dataset(temp_file_path)
         print("Temp dataset loaded.")
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
 
     evaluation.crunch(surf_path, model, w, d, x_train, y_train, 'train_loss', 'train_acc', batch_size)
 
@@ -68,14 +75,14 @@ if __name__ == "__main__":
 
     tf.random.set_seed(123)
 
-    model_type = 'vgg9_bn'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_bn_aug.h5"
+    model_type = 'vgg16_bn'
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_cifar_pol_42_0.8499_weights.h5"
     dataset = 'cifar10'
     load_mode = 'tfds'
     train_model = False
     batch_size = 128
     add_aug = True
-    aug_pol = 'baseline'
+    aug_pol = 'cifar_pol'
     plot_history = True
     workers = 1
 
@@ -85,6 +92,6 @@ if __name__ == "__main__":
         model.model.save(model_path)
 
     fig_type = '2D'
-    dot_num = 51
+    dot_num = 21
     
-    main(model_path, batch_size, dataset, load_mode, fig_type, dot_num=dot_num, add_aug=add_aug, aug_pol=aug_pol)
+    main(model_type, model_path, batch_size, dataset, load_mode, fig_type, dot_num=dot_num, add_aug=add_aug, aug_pol=aug_pol)

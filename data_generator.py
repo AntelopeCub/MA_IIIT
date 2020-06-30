@@ -99,7 +99,7 @@ def set_temp_dataset(dataset, load_mode, aug_pol):
         x = np.asarray(x, dtype=np.float32) / 255.0
         x_train_aug.append(x)
 
-    temp_file_name = 'temp_' + dataset + '_' + aug_pol + '_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
+    temp_file_name = 'temp_' + dataset + '_' + aug_pol + '_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=3)) + '.h5'
     temp_file_path = './models/' + temp_file_name
 
     f = h5py.File(temp_file_path, 'w')
@@ -122,6 +122,6 @@ def load_temp_dataset(temp_file_path):
     y_train = np.asarray(y_train)
 
     f.close()
-    os.remove(temp_file_path)
+    #os.remove(temp_file_path)
 
     return x_train, y_train

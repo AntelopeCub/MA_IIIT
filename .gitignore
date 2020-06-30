@@ -136,6 +136,11 @@ dmypy.json
 /logs
 *.ipynb
 
+# h5 files in folder models,directions and surface
+/models/*/directions/*.h5
+/models/*/surface/*.h5
+/models/*/*.h5
+
 # vs and vscode
 /.vs
 /.vscode

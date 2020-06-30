@@ -2,14 +2,18 @@ import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
-import data_loader
-import direction
+import math
+import sys
+import time
+
 import h5py
-import h5_util
 import numpy as np
 import tensorflow as tf
-import time
-import math
+
+import data_loader
+import direction
+import h5_util
+
 
 def setup_surface_file(surf_path, dir_path, set_y, num=51):
 
@@ -68,6 +72,7 @@ def eval_loss(model, cce, x_train_list, y_train_list, batch_size):
     loss = total_loss / total
     acc = 1.*correct/total
     print('loss: %f, acc: %f' % (loss, acc))
+    sys.stdout.flush()
     return loss, acc
 
 def crunch(surf_path, model, w, d, x_train_list, y_train_list, loss_key, acc_key, batch_size=128):
