@@ -90,9 +90,9 @@ class build_model(object):
             elif aug_pol == 'cifar_pol':
                 policy_list = ['cifar_pol1', 'cifar_pol2']
             train_gen = data_generator.Image_Generator(x_train, y_train, batch_size, policy_list)
-
-        x_train = x_train.astype('float32') / 255.0
-        x_test = x_test.astype('float32') / 255.0
+        else:
+            x_train = x_train.astype('float32') / 255.0
+            x_test = x_test.astype('float32') / 255.0
 
         if 'vgg' in self.model_type:
             self.optimizer = SGD(learning_rate=learning_rate)

@@ -49,7 +49,7 @@ def main(model_type, model_path, batch_size, dataset, load_mode, fig_type, dot_n
 
     if not add_aug:
         x_train, y_train, _, _ = data_loader.load_data(dataset, load_mode=load_mode)
-        x_train = x_train / 255.0
+        x_train = x_train.astype('float32') / 255.0
     else:
         print("Load temp dataset.")
         temp_file_path = data_generator.set_temp_dataset(dataset, load_mode, aug_pol)
@@ -76,12 +76,12 @@ if __name__ == "__main__":
     tf.random.set_seed(123)
 
     model_type = 'vgg16_bn'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_cifar_pol_42_0.8499_weights.h5"
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_46_0.8404_weights.h5"
     dataset = 'cifar10'
     load_mode = 'tfds'
     train_model = False
     batch_size = 128
-    add_aug = True
+    add_aug = False
     aug_pol = 'cifar_pol'
     plot_history = True
     workers = 1
