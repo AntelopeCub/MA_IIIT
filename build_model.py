@@ -31,6 +31,7 @@ def lr_decay(epoch):
     else:
         return init_lr * (factor ** 3)
 
+
 def plot_result(history):
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']
@@ -53,6 +54,19 @@ def plot_result(history):
     plt.ylabel('Loss')
     plt.legend()
     plt.show()
+
+
+class Cyclic_LR_Scheduler():
+    
+    def __init__(self, initial_rate, cycle_length=33, end_rate=1e-10, drop_rate=1.):
+        self.initial_rate = initial_rate
+        self.cycle_length = cycle_length
+        self.end_rate     = end_rate
+        self.drop_rate    = drop_rate
+        
+    def cyc_decay(self, epoch):
+        return self.end_rate + 0.5* self.initial_rate * ( 1+np.cos(np.mod(epoch, self.cycle_length+1)*np.pi/(self.cycle_length+1)) ) * self.drop_rate**(np.floor(epoch / self.cycle_length))
+
 
 class build_model(object):
 
@@ -81,8 +95,15 @@ class build_model(object):
         elif model_type == 'vgg16_bn':
             self.model = VGG16_BN(self.input_shape, self.l2_reg, num_class=self.num_class)
 
-    def train_model(self, learning_rate=0.1, batch_size=128, epochs=20, load_mode='tfds', plot_history=False, add_aug=False, aug_pol='baseline', callbacks=None, workers=1):
+    def train_model(self, optimizer=None, batch_size=128, epochs=20, load_mode='tfds', plot_history=False, add_aug=False, aug_pol='baseline', callbacks=None, workers=1):
         
+        if optimizer is None:
+            self.optimizer = SGD(learning_rate=0.1)
+        else:
+            self.optimizer = optimizer
+
+        self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+
         x_train, y_train, x_test, y_test = data_loader.load_data(self.dataset, load_mode=load_mode)
         if add_aug:
             if aug_pol == 'baseline':
@@ -92,11 +113,12 @@ class build_model(object):
             train_gen = data_generator.Image_Generator(x_train, y_train, batch_size, policy_list)
         else:
             x_train = x_train.astype('float32') / 255.0
-            x_test = x_test.astype('float32') / 255.0
+        
+        x_test = x_test.astype('float32') / 255.0
 
         if 'vgg' in self.model_type:
-            self.optimizer = SGD(learning_rate=learning_rate)
-            self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])            
+            #self.optimizer = SGD(learning_rate=learning_rate)
+            #self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
             
             if not add_aug:
                 self.history = self.model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epochs, batch_size=batch_size, callbacks=callbacks, workers=workers)
@@ -104,7 +126,7 @@ class build_model(object):
                 self.history = self.model.fit(train_gen, validation_data=(x_test, y_test), epochs=epochs, steps_per_epoch=len(train_gen), callbacks=callbacks, workers=workers)
             if plot_history:
                 plot_result(self.history)
-
+        '''
         elif 'resnet' in self.model_type:
             self.optimizer = SGD(learning_rate=learning_rate, momentum=0.9, nesterov=True)
             self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
@@ -115,7 +137,8 @@ class build_model(object):
                 self.history = self.model.fit(train_gen, validation_data=(x_test, y_test), epochs=epochs, steps_per_epoch=len(train_gen), callbacks=callbacks)
             if plot_history:
                 plot_result(self.history)
-
+        '''
+        
 if __name__ == "__main__":
     
     pass
