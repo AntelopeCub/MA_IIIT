@@ -21,7 +21,9 @@ class Image_Generator(tf.keras.utils.Sequence):
         x_set,
         y_set,
         batch_size,
-        policy_list
+        policy_list,
+        x_mean=None,
+        x_std=None
         ):
 
         self.x_set = x_set
@@ -29,6 +31,16 @@ class Image_Generator(tf.keras.utils.Sequence):
         self.batch_size = batch_size
         self.policies = [get_policies(policy) for policy in policy_list]
         self._set_probs()
+
+        if x_mean is None:
+            self.x_mean = np.mean(x_set).astype('float32')
+        else:
+            self.x_mean = x_mean
+
+        if x_std is None:
+            self.x_std = np.std(x_set).astype('float32')
+        else:
+            self.x_std = x_std
 
     def __len__(self):
         return math.ceil(len(self.x_set) / self.batch_size)
@@ -47,10 +59,11 @@ class Image_Generator(tf.keras.utils.Sequence):
             x = np.copy(self.x_set[idx])
             new_policy = [p[x_idx] for p in new_policies]
             x = add_augment(x, new_policy)
-            x = np.asarray(x, dtype=np.float32) / 255.0
+            x = np.asarray(x, dtype=np.float32)
             x_batch.append(x)
 
         x_batch = np.asarray(x_batch)
+        x_batch = (x_batch - self.x_mean) / (self.x_std + 1e-7)
         y_batch = np.asarray(y_batch)
 
         return x_batch, y_batch
@@ -71,6 +84,8 @@ class Image_Generator(tf.keras.utils.Sequence):
         
 def set_temp_dataset(dataset, load_mode, aug_pol):
     x_train, y_train, _, _ = data_loader.load_data(dataset, load_mode=load_mode)
+    x_mean = np.mean(x_train).astype('float32')
+    x_std = np.std(x_train).astype('float32')
     shuffle_list = np.arange(x_train.shape[0])
     np.random.shuffle(shuffle_list)
     x_train = x_train[shuffle_list]
@@ -96,7 +111,8 @@ def set_temp_dataset(dataset, load_mode, aug_pol):
         x = np.copy(x_train[idx])
         new_policy = [p[idx] for p in new_policies]
         x = add_augment(x, new_policy)
-        x = np.asarray(x, dtype=np.float32) / 255.0
+        x = np.asarray(x, dtype=np.float32)
+        x = (x - x_mean) / (x_std + 1e-7)
         x_train_aug.append(x)
 
     temp_file_name = 'temp_' + dataset + '_' + aug_pol + '_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=3)) + '.h5'

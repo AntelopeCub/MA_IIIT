@@ -81,7 +81,7 @@ if __name__ == "__main__":
     load_mode = 'tfds'
     train_model = False
     batch_size = 128
-    add_aug = False
+    add_aug = True
     aug_pol = 'cifar_pol'
     plot_history = True
     workers = 1

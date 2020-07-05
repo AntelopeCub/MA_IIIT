@@ -107,18 +107,18 @@ class build_model(object):
         self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
         x_train, y_train, x_test, y_test = data_loader.load_data(self.dataset, load_mode=load_mode)
-        x_mean = np.mean(x_train)
-        x_std = np.std(x_train)
+        x_mean = np.mean(x_train).astype('float32')
+        x_std = np.std(x_train).astype('float32')
         if add_aug:
             if aug_pol == 'baseline':
                 policy_list = ['reduced_mirror',  'crop', 'cutout']
             elif aug_pol == 'cifar_pol':
                 policy_list = ['cifar_pol1', 'cifar_pol2']
-            train_gen = data_generator.Image_Generator(x_train, y_train, batch_size, policy_list)
+            train_gen = data_generator.Image_Generator(x_train, y_train, batch_size, policy_list, x_mean=x_mean, x_std=x_std)
         else:
-            x_train = x_train.astype('float32') / 255.0
+            x_train = (x_train.astype('float32') - x_mean) / (x_std + 1e-7)
         
-        x_test = x_test.astype('float32') / 255.0
+        x_test = (x_test.astype('float32') - x_mean) / (x_std + 1e-7)
 
         if 'vgg' in self.model_type:
             #self.optimizer = SGD(learning_rate=learning_rate)
