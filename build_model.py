@@ -70,7 +70,7 @@ class Cyclic_LR_Scheduler():
 
 class build_model(object):
 
-    def __init__(self, model_type, dataset, l2_reg_rate=None):
+    def __init__(self, model_type, dataset, l2_reg_rate=None, fc_type=None):
 
         self.model_type = model_type
 
@@ -88,12 +88,14 @@ class build_model(object):
         else:
             self.l2_reg = None
 
+        self.fc_type = fc_type
+
         if model_type == 'vgg9':
             self.model = VGG9_no_BN(self.input_shape, self.l2_reg, num_class=self.num_class)
         elif model_type == 'vgg9_bn':
             self.model = VGG9_BN(self.input_shape, self.l2_reg, num_class=self.num_class)
         elif model_type == 'vgg16_bn':
-            self.model = VGG16_BN(self.input_shape, self.l2_reg, num_class=self.num_class)
+            self.model = VGG16_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
 
     def train_model(self, optimizer=None, batch_size=128, epochs=20, load_mode='tfds', plot_history=False, add_aug=False, aug_pol='baseline', callbacks=None, workers=1):
         
@@ -105,6 +107,8 @@ class build_model(object):
         self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
         x_train, y_train, x_test, y_test = data_loader.load_data(self.dataset, load_mode=load_mode)
+        x_mean = np.mean(x_train)
+        x_std = np.std(x_train)
         if add_aug:
             if aug_pol == 'baseline':
                 policy_list = ['reduced_mirror',  'crop', 'cutout']
