@@ -16,12 +16,12 @@ import plot_2D
 from build_model import build_model
 
 
-def main(model_type, model_path, batch_size, dataset, load_mode, fig_type, dot_num=11, add_aug=False, aug_pol='baseline'):
+def main(model_type, model_path, batch_size, dataset, load_mode, fig_type, dot_num=11, add_aug=False, aug_pol='baseline', fc_type=None):
     
     try:
         model = load_model(model_path)
     except Exception as e:
-        model = build_model(model_type, dataset).model
+        model = build_model(model_type, dataset, fc_type=fc_type).model
         model.load_weights(model_path)
     
     dir_path = model_path[:-3] + '_' + fig_type + '.h5'
@@ -76,12 +76,13 @@ if __name__ == "__main__":
     tf.random.set_seed(123)
 
     model_type = 'vgg16_bn'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_46_0.8404_weights.h5"
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_256_norm_Nadam_l2_dropout_cifar_pol_120_0.9001_weights.h5"
     dataset = 'cifar10'
+    fc_type = 'dropout'
     load_mode = 'tfds'
     train_model = False
-    batch_size = 128
-    add_aug = True
+    batch_size = 256
+    add_aug = False
     aug_pol = 'cifar_pol'
     plot_history = True
     workers = 1
@@ -92,6 +93,6 @@ if __name__ == "__main__":
         model.model.save(model_path)
 
     fig_type = '2D'
-    dot_num = 21
+    dot_num = 3
     
-    main(model_type, model_path, batch_size, dataset, load_mode, fig_type, dot_num=dot_num, add_aug=add_aug, aug_pol=aug_pol)
+    main(model_type, model_path, batch_size, dataset, load_mode, fig_type, dot_num=dot_num, add_aug=add_aug, aug_pol=aug_pol, fc_type=fc_type)
