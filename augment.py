@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageOps
 
 def add_augment(img, policy):
 
-    shape = img.shape
+    shape = img.shape #shape[0]:height, shape[1]: width, shape[2]: channel
 
     if shape[2] == 3:
         fcol = np.mean(img, axis=(0,1)).astype('uint8')
@@ -47,7 +47,7 @@ def add_augment(img, policy):
             rand = np.random.uniform(0, 1, 2)
             blob = (np.array([rand[1]*shape[1], rand[1]*(0.5+rand[0])*shape[0]]) * p['mag']/20.).astype('int')
             if blob[1]*blob[0] != 0:
-                pxls = (np.random.randint(shape[0]-blob[1]-1), np.random.randint(shape[1]-blob[0]-1))
+                pxls = (np.random.randint(shape[1]-blob[0]-1), np.random.randint(shape[0]-blob[1]-1))
                 if shape[2] == 3:
                     blob = np.append(blob, [3])
                 noise = Image.fromarray(np.clip(np.random.randint(255, size=blob),0,255).astype('uint8'))
@@ -60,7 +60,7 @@ def add_augment(img, policy):
             rand = np.random.uniform(0, 1, 2)
             blob = (np.array([rand[1]*shape[1], rand[1]*(0.5+rand[0])*shape[0]]) * p['mag']/20.).astype('int')
             if blob[1]*blob[0] != 0:
-                pxls = (np.random.randint(shape[0]-blob[1]-1), np.random.randint(shape[1]-blob[0]-1))
+                pxls = (np.random.randint(shape[1]-blob[0]-1), np.random.randint(shape[0]-blob[1]-1))
                 if img.mode == 'RGB':
                     blob = np.append(blob, [3])
                 draw = ImageDraw.Draw(img)
@@ -86,11 +86,11 @@ def add_augment(img, policy):
         elif p['op'] == 'srx':
             img = Image.fromarray(img)
             shear = np.random.uniform(-0.5, 0.5) * p['mag'] / 10.
-            img = img.transform((shape[0], shape[1]), Image.AFFINE, (1, shear, 0, 0, 1, 0), resample=Image.BICUBIC, fillcolor=tuple(fcol))
+            img = img.transform((shape[1], shape[0]), Image.AFFINE, (1, shear, 0, 0, 1, 0), resample=Image.BICUBIC, fillcolor=tuple(fcol))
         elif p['op'] == 'sry':
             img = Image.fromarray(img)
             shear = np.random.uniform(-0.5, 0.5) * p['mag'] / 10.
-            img = img.transform((shape[0], shape[1]), Image.AFFINE, (1, 0, 0, shear, 1, 0), resample=Image.BICUBIC, fillcolor=tuple(fcol))
+            img = img.transform((shape[1], shape[0]), Image.AFFINE, (1, 0, 0, shear, 1, 0), resample=Image.BICUBIC, fillcolor=tuple(fcol))
         
         #autocontrast
         elif p['op'] == 'auc':
@@ -124,11 +124,11 @@ def add_augment(img, policy):
         elif p['op'] == 'tlx':
             img = Image.fromarray(img)
             shift = np.random.uniform(-0.5, 0.5) * p['mag'] / 10.
-            img = img.transform((shape[0], shape[1]), Image.AFFINE, (1, 0, shift, 0, 1, 0), resample=Image.BICUBIC, fillcolor=tuple(fcol))
+            img = img.transform((shape[1], shape[0]), Image.AFFINE, (1, 0, shift, 0, 1, 0), resample=Image.BICUBIC, fillcolor=tuple(fcol))
         elif p['op'] == 'tly':
             img = Image.fromarray(img)
             shift = np.random.uniform(-0.5, 0.5) * p['mag'] / 10.
-            img = img.transform((shape[0], shape[1]), Image.AFFINE, (1, 0, 0, 0, 1, shift), resample=Image.BICUBIC, fillcolor=tuple(fcol))
+            img = img.transform((shape[1], shape[0]), Image.AFFINE, (1, 0, 0, 0, 1, shift), resample=Image.BICUBIC, fillcolor=tuple(fcol))
 
         #solarize
         elif p['op'] == 'sol':
