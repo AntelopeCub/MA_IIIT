@@ -123,11 +123,11 @@ def add_augment(img, policy):
         #translation
         elif p['op'] == 'tlx':
             img = Image.fromarray(img)
-            shift = np.random.uniform(-0.5, 0.5) * p['mag'] / 10.
+            shift = shape[1] * np.random.uniform(-0.5, 0.5) * p['mag'] / 10.
             img = img.transform((shape[1], shape[0]), Image.AFFINE, (1, 0, shift, 0, 1, 0), resample=Image.BICUBIC, fillcolor=tuple(fcol))
         elif p['op'] == 'tly':
             img = Image.fromarray(img)
-            shift = np.random.uniform(-0.5, 0.5) * p['mag'] / 10.
+            shift = shape[0] * np.random.uniform(-0.5, 0.5) * p['mag'] / 10.
             img = img.transform((shape[1], shape[0]), Image.AFFINE, (1, 0, 0, 0, 1, shift), resample=Image.BICUBIC, fillcolor=tuple(fcol))
 
         #solarize

@@ -11,7 +11,8 @@ import tensorflow as tf
 
 import data_loader
 import h5_util
-from augment import add_augment, get_policies
+#from augment import add_augment, get_policies
+from autoaugment import add_autoaugment, get_auto_policies
 
 
 class Image_Generator(tf.keras.utils.Sequence):
@@ -21,7 +22,7 @@ class Image_Generator(tf.keras.utils.Sequence):
         x_set,
         y_set,
         batch_size,
-        policy_list,
+        aug_pol,
         x_mean=None,
         x_std=None
         ):
@@ -29,8 +30,8 @@ class Image_Generator(tf.keras.utils.Sequence):
         self.x_set = x_set
         self.y_set = y_set
         self.batch_size = batch_size
-        self.policies = [get_policies(policy) for policy in policy_list]
-        self._set_probs()
+        self.policies = get_auto_policies(aug_pol)
+        #self._set_probs()
 
         if x_mean is None:
             self.x_mean = np.mean(x_set).astype('float32')
@@ -49,16 +50,11 @@ class Image_Generator(tf.keras.utils.Sequence):
         
         y_batch = self.y_set[self.batch_size * step_idx : self.batch_size * (step_idx + 1)]
 
-        new_policies = []
-        for p_idx in range(len(self.policies)):
-            choose = np.random.choice(range(len(self.policies[p_idx])), len(y_batch), p=self.probs[p_idx])
-            new_policies.append(operator.itemgetter(*choose)(self.policies[p_idx]))
-
         x_batch = []
         for x_idx, idx in enumerate(range(self.batch_size * step_idx, self.batch_size * (step_idx + 1) if self.batch_size * (step_idx + 1) < len(self.x_set) else len(self.x_set))):
             x = np.copy(self.x_set[idx])
-            new_policy = [p[x_idx] for p in new_policies]
-            x = add_augment(x, new_policy)
+            new_policy = self.policies[np.random.randint(len(self.policies))]
+            x = add_autoaugment(x, new_policy)
             x = np.asarray(x, dtype=np.float32)
             x_batch.append(x)
 
@@ -91,26 +87,13 @@ def set_temp_dataset(dataset, load_mode, aug_pol):
     x_train = x_train[shuffle_list]
     y_train = y_train[shuffle_list]
 
-    if aug_pol == 'baseline':
-        policy_list = ['reduced_mirror',  'crop', 'cutout']
-    elif aug_pol == 'cifar_pol':
-        policy_list = ['cifar_pol1', 'cifar_pol2']
-
-    policies = [get_policies(policy) for policy in policy_list]
-    probs = []
-    for policy in policies:
-        probs.append([p.get('prob') for p in policy])
-    
-    new_policies = []
-    for p_idx in range(len(policies)):
-        choose = np.random.choice(range(len(policies[p_idx])), len(x_train), p=probs[p_idx])
-        new_policies.append(operator.itemgetter(*choose)(policies[p_idx]))
+    policies = get_auto_policies(aug_pol)
     
     x_train_aug = []
     for idx in range(len(x_train)):
         x = np.copy(x_train[idx])
-        new_policy = [p[idx] for p in new_policies]
-        x = add_augment(x, new_policy)
+        new_policy = policies[np.random.randint(len(policies))]
+        x = add_autoaugment(x, new_policy)
         x = np.asarray(x, dtype=np.float32)
         x = (x - x_mean) / (x_std + 1e-7)
         x_train_aug.append(x)

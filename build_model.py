@@ -110,11 +110,7 @@ class build_model(object):
         x_mean = np.mean(x_train).astype('float32')
         x_std = np.std(x_train).astype('float32')
         if add_aug:
-            if aug_pol == 'baseline':
-                policy_list = ['reduced_mirror',  'crop', 'cutout']
-            elif aug_pol == 'cifar_pol':
-                policy_list = ['cifar_pol1', 'cifar_pol2']
-            train_gen = data_generator.Image_Generator(x_train, y_train, batch_size, policy_list, x_mean=x_mean, x_std=x_std)
+            train_gen = data_generator.Image_Generator(x_train, y_train, batch_size, aug_pol, x_mean=x_mean, x_std=x_std)
         else:
             x_train = (x_train.astype('float32') - x_mean) / (x_std + 1e-7)
         
