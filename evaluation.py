@@ -60,7 +60,11 @@ def eval_loss(model, cce, x_train_list, y_train_list, batch_size):
     total = len(x_train_list)
     step_num = math.ceil(total / batch_size)
     total_loss = 0
+    reg_loss = 0
     correct = 0
+
+    if len(model.losses) > 0:
+        reg_loss = np.sum(model.losses)
 
     for idx in range(step_num):
         x = x_train_list[batch_size*idx:batch_size*(idx+1)]
@@ -69,10 +73,10 @@ def eval_loss(model, cce, x_train_list, y_train_list, batch_size):
         total_loss += cce(y, out).numpy()
         eq = tf.math.equal(tf.math.argmax(out, axis=1), tf.math.argmax(y, axis=1))
         correct += np.sum(eq)
-    loss = total_loss / total
+    loss = total_loss / total + reg_loss
     acc = 1.*correct/total
-    print('loss: %f, acc: %f' % (loss, acc))
-    sys.stdout.flush()
+    #print('loss: %f, acc: %f' % (loss, acc))
+    #sys.stdout.flush()
     return loss, acc
 
 def crunch(surf_path, model, w, d, x_train_list, y_train_list, loss_key, acc_key, batch_size=128):
@@ -107,6 +111,9 @@ def crunch(surf_path, model, w, d, x_train_list, y_train_list, loss_key, acc_key
             f[acc_key][:] = accuracies
             f.flush()
 
+            print('coord=%s, \tloss: %f, acc: %f' % (str(coord), loss, acc))
+            sys.stdout.flush()
+
     else:
         for idx, coord in enumerate(xcoordinates):
             set_weights(model, w, d, coord)
@@ -117,6 +124,9 @@ def crunch(surf_path, model, w, d, x_train_list, y_train_list, loss_key, acc_key
             f[loss_key][:] = losses
             f[acc_key][:] = accuracies
             f.flush()
+
+            print('coord=%s, \tloss: %f, acc: %f' % (str(coord), loss, acc))
+            sys.stdout.flush()
 
     f.close()
     total_time = time.time() - start_time

@@ -56,7 +56,7 @@ def  plot_3d_surface(surf_path, surf_name='train_loss', show=False):
 
 if __name__ == "__main__":
 
-    surf_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/surface/vgg16_bn_46_0.8404_weights_2D_surface.h5"
+    surf_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/surface/vgg16_bn_128_norm_SGDNesterov_l2_avg_248_0.8935_weights_2D_51_surface.h5"
 
-    #plot_2d_contour(surf_path, surf_name='train_loss', vmin=0.1, vmax=10, vlevel=0.5, show=True)
-    plot_3d_surface(surf_path, surf_name='train_loss', show=True)
+    plot_2d_contour(surf_path, surf_name='train_loss', vmin=0.1, vmax=4, vlevel=0.2, show=True)
+    #plot_3d_surface(surf_path, surf_name='train_loss', show=True)
