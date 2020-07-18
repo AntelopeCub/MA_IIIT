@@ -91,9 +91,9 @@ class build_model(object):
         self.fc_type = fc_type
 
         if model_type == 'vgg9':
-            self.model = VGG9_no_BN(self.input_shape, self.l2_reg, num_class=self.num_class)
+            self.model = VGG9_no_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'vgg9_bn':
-            self.model = VGG9_BN(self.input_shape, self.l2_reg, num_class=self.num_class)
+            self.model = VGG9_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'vgg16_bn':
             self.model = VGG16_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'resnet56':
