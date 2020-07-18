@@ -20,7 +20,7 @@ from build_vgg import VGG9_BN, VGG16_BN, VGG9_no_BN
 
 
 def lr_decay(epoch):
-    init_lr = 0.01
+    init_lr = 0.1
     factor = 0.1
     if epoch < 150:
         return init_lr

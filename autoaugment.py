@@ -2,8 +2,6 @@ import random
 
 import numpy as np
 import PIL
-import tensorflow as tf
-import tensorflow_addons as tfa
 from PIL import Image, ImageDraw, ImageEnhance, ImageOps
 
 
@@ -142,3 +140,7 @@ def get_auto_policies(name):
         raise(Exception('Unknown policy: %s' % (name)))
 
     return policies
+
+
+if __name__ == "__main__":
+    pass
