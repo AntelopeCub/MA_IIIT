@@ -129,5 +129,5 @@ def VGG9_BN(input_shape, l2_reg, num_class=10, fc_type=None):
 
 if __name__ == "__main__":
     
-    model = VGG16_BN((32,32,3), None)
+    model = VGG16_BN((32,32,3), None, fc_type='avg')
     model.summary()

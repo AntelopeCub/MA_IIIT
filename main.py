@@ -78,14 +78,14 @@ if __name__ == "__main__":
     tf.random.set_seed(123)
 
     model_type = 'vgg16_bn'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2_avg_248_0.8935_weights.h5"
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2_avg_cifar_auto_234_0.9183_weights.h5"
     dataset = 'cifar10'
     fc_type = 'avg'
     load_mode = 'tfds'
     train_model = False
     l2_reg_rate = 0.0005
     batch_size = 128
-    add_aug = False
+    add_aug = True
     aug_pol = 'cifar_auto'
     plot_history = True
     workers = 1

@@ -1,6 +1,7 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, Conv2D, BatchNormalization, Activation
-from tensorflow.keras.layers import AveragePooling2D, Input, Flatten
+from tensorflow.keras.layers import (Activation, AveragePooling2D,
+                                     BatchNormalization, Conv2D, Dense,
+                                     Flatten, GlobalAveragePooling2D, Input)
 from tensorflow.keras.models import Model
 
 
@@ -20,6 +21,7 @@ def resnet_layer(inputs,
                   kernel_size=kernel_size,
                   strides=strides,
                   padding='same',
+                  use_bias=False,
                   kernel_initializer='he_normal',
                   kernel_regularizer=l2_reg)
 
@@ -74,7 +76,7 @@ def resnet_v1(input_shape, depth, num_classes=10, l2_reg=None):
                                  kernel_size=1,
                                  strides=strides,
                                  activation=None,
-                                 batch_normalization=False,
+                                 batch_normalization=True,
                                  l2_reg=l2_reg)
             x = tf.keras.layers.add([x, y])
             x = Activation('relu')(x)
@@ -82,11 +84,13 @@ def resnet_v1(input_shape, depth, num_classes=10, l2_reg=None):
 
     # Add classifier on top.
     # v1 does not use BN after last shortcut connection-ReLU
-    x = AveragePooling2D(pool_size=8)(x)
-    y = Flatten()(x)
+    #x = AveragePooling2D(pool_size=8)(x)
+    #y = Flatten()(x)
+    x = GlobalAveragePooling2D()(x)
     outputs = Dense(num_classes,
                     activation='softmax',
-                    kernel_initializer='he_normal')(y)
+                    kernel_initializer='he_normal',
+                    kernel_regularizer=l2_reg)(x)
 
     # Instantiate model.
     model = Model(inputs=inputs, outputs=outputs)
@@ -153,7 +157,7 @@ def resnet_v2(input_shape, depth, num_classes=10, l2_reg=None):
                                  kernel_size=1,
                                  strides=strides,
                                  activation=None,
-                                 batch_normalization=False,
+                                 batch_normalization=True,
                                  l2_reg=l2_reg)
             x = tf.keras.layers.add([x, y])
 
@@ -163,19 +167,21 @@ def resnet_v2(input_shape, depth, num_classes=10, l2_reg=None):
     # v2 has BN-ReLU before Pooling
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
-    x = AveragePooling2D(pool_size=8)(x)
-    y = Flatten()(x)
+    #x = AveragePooling2D(pool_size=8)(x)
+    #y = Flatten()(x)
+    x = GlobalAveragePooling2D()(x)
     outputs = Dense(num_classes,
                     activation='softmax',
-                    kernel_initializer='he_normal')(y)
+                    kernel_initializer='he_normal',
+                    kernel_regularizer=l2_reg)(x)
 
     # Instantiate model.
     model = Model(inputs=inputs, outputs=outputs)
     return model
 
-def ResNet56(input_shape=(32,32,3), l2_reg=None):
-    return resnet_v1(input_shape=input_shape, depth=56, l2_reg=l2_reg)
+def ResNet56(input_shape=(32,32,3), num_class=10, l2_reg=None):
+    return resnet_v1(input_shape=input_shape, depth=56, num_classes=num_class, l2_reg=l2_reg)
 
 if __name__ == "__main__":
-    model = ResNet56()
+    model = ResNet56(l2_reg=tf.keras.regularizers.l2(l=5e-4))
     a = 1

@@ -16,7 +16,7 @@ from tensorflow.keras.optimizers import SGD
 import data_generator
 import data_loader
 from build_resnet import ResNet56
-from build_vgg import VGG9_BN, VGG9_no_BN, VGG16_BN
+from build_vgg import VGG9_BN, VGG16_BN, VGG9_no_BN
 
 
 def lr_decay(epoch):
@@ -96,6 +96,8 @@ class build_model(object):
             self.model = VGG9_BN(self.input_shape, self.l2_reg, num_class=self.num_class)
         elif model_type == 'vgg16_bn':
             self.model = VGG16_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
+        elif model_type == 'resnet56':
+            self.model = ResNet56(input_shape=self.input_shape, num_class=self.num_class, l2_reg=self.l2_reg)
 
     def train_model(self, optimizer=None, batch_size=128, epochs=20, load_mode='tfds', plot_history=False, add_aug=False, aug_pol='baseline', callbacks=None, workers=1):
         
@@ -116,28 +118,14 @@ class build_model(object):
         
         x_test = (x_test.astype('float32') - x_mean) / (x_std + 1e-7)
 
-        if 'vgg' in self.model_type:
-            #self.optimizer = SGD(learning_rate=learning_rate)
-            #self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
-            
-            if not add_aug:
-                self.history = self.model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epochs, batch_size=batch_size, callbacks=callbacks, workers=workers)
-            else:
-                self.history = self.model.fit(train_gen, validation_data=(x_test, y_test), epochs=epochs, steps_per_epoch=len(train_gen), callbacks=callbacks, workers=workers)
-            if plot_history:
-                plot_result(self.history)
-        '''
-        elif 'resnet' in self.model_type:
-            self.optimizer = SGD(learning_rate=learning_rate, momentum=0.9, nesterov=True)
-            self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
-            callback = [LearningRateScheduler(lr_decay)]
-            if not add_aug:
-                self.history = self.model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epochs, batch_size=batch_size, callbacks=callbacks)
-            else:
-                self.history = self.model.fit(train_gen, validation_data=(x_test, y_test), epochs=epochs, steps_per_epoch=len(train_gen), callbacks=callbacks)
-            if plot_history:
-                plot_result(self.history)
-        '''
+        if not add_aug:
+            self.history = self.model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epochs, batch_size=batch_size, callbacks=callbacks, workers=workers)
+        else:
+            self.history = self.model.fit(train_gen, validation_data=(x_test, y_test), epochs=epochs, steps_per_epoch=len(train_gen), callbacks=callbacks, workers=workers)
+        
+        if plot_history:
+            plot_result(self.history)
+
         
 if __name__ == "__main__":
     
