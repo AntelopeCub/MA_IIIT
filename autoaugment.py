@@ -23,6 +23,16 @@ def add_autoaugment(img, policy):
             if p['op'] == 'inv':
                 img = np.invert(img)
 
+            #flip
+            elif p['op'] == 'mrx':
+                img = np.fliplr(img)
+
+            #zero-padding & random crop
+            elif p['op'] == 'p&c':
+                img = np.pad(img, ((4, 4), (4, 4), (0, 0)), mode='constant', constant_values=0)
+                pxl = np.random.randint(8, size=2)
+                img = img[pxl[0]:pxl[0]+shape[0],pxl[1]:pxl[1]+shape[1]]
+
             #PIL method
             else:
                 if isinstance(img, np.ndarray):
@@ -95,7 +105,14 @@ def add_autoaugment(img, policy):
                 #sharpness
                 elif p['op'] == 'sha':
                     enha = 0.1 + 1.8 * p['mag'] / 10.
-                    img = ImageEnhance.Sharpness(img).enhance(enha)        
+                    img = ImageEnhance.Sharpness(img).enhance(enha)
+
+                #cutout
+                elif p['op'] == 'cut':
+                    mag = 1 - p['mag'] / 10.
+                    pxls = (np.random.randint(int(shape[1]*mag)), np.random.randint(int(shape[0]*mag)))
+                    draw = ImageDraw.Draw(img)
+                    draw.rectangle([pxls[0], pxls[1], pxls[0]+16, pxls[1]+16], fill=tuple(fcol))
 
                 else:
                     raise(Exception('Unknown augment operation: %s' % (p['op'])))
@@ -135,6 +152,9 @@ def get_auto_policies(name):
         policies.append(({'op': 'auc', 'prob': 0.9, 'mag': 2}, {'op': 'sol', 'prob': 0.8, 'mag': 3}))
         policies.append(({'op': 'eqz', 'prob': 0.8, 'mag': 8}, {'op': 'inv', 'prob': 0.1, 'mag': 3}))
         policies.append(({'op': 'tly', 'prob': 0.7, 'mag': 9}, {'op': 'auc', 'prob': 0.9, 'mag': 1}))
+
+    elif name == 'baseline':
+        policies = []
 
     else:
         raise(Exception('Unknown policy: %s' % (name)))

@@ -54,6 +54,8 @@ class Image_Generator(tf.keras.utils.Sequence):
         for x_idx, idx in enumerate(range(self.batch_size * step_idx, self.batch_size * (step_idx + 1) if self.batch_size * (step_idx + 1) < len(self.x_set) else len(self.x_set))):
             x = np.copy(self.x_set[idx])
             new_policy = self.policies[np.random.randint(len(self.policies))]
+            new_policy = [{'op': 'mrx', 'prob': 0.5, 'mag': 0}] + list(new_policy)
+            new_policy = new_policy + [{'op': 'p&c', 'prob': 1, 'mag': 0}, {'op': 'cut', 'prob': 1, 'mag': 5}]
             x = add_autoaugment(x, new_policy)
             x = np.asarray(x, dtype=np.float32)
             x_batch.append(x)
@@ -93,6 +95,8 @@ def set_temp_dataset(dataset, load_mode, aug_pol):
     for idx in range(len(x_train)):
         x = np.copy(x_train[idx])
         new_policy = policies[np.random.randint(len(policies))]
+        new_policy = [{'op': 'mrx', 'prob': 0.5, 'mag': 0}] + list(new_policy)
+        new_policy = new_policy + [{'op': 'p&c', 'prob': 1, 'mag': 0}, {'op': 'cut', 'prob': 1, 'mag': 5}]
         x = add_autoaugment(x, new_policy)
         x = np.asarray(x, dtype=np.float32)
         x = (x - x_mean) / (x_std + 1e-7)
