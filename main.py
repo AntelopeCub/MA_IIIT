@@ -77,13 +77,13 @@ if __name__ == "__main__":
 
     tf.random.set_seed(123)
 
-    model_type = 'vgg16_bn'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2_avg_cifar_auto_234_0.9183_weights.h5"
+    model_type = 'resnet56'
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/resnet56/resnet56_128_norm_SGDNesterov_l2=0.0005_cifar_auto_234_0.9463_weights.h5"
     dataset = 'cifar10'
     fc_type = 'avg'
     load_mode = 'tfds'
     train_model = False
-    l2_reg_rate = 0.0005
+    l2_reg_rate = 5e-4
     batch_size = 128
     add_aug = True
     aug_pol = 'cifar_auto'
@@ -96,6 +96,6 @@ if __name__ == "__main__":
         model.model.save(model_path)
 
     fig_type = '2D'
-    dot_num = 51
+    dot_num = 25
     
     main(model_type, model_path, batch_size, dataset, load_mode, fig_type, dot_num=dot_num, add_aug=add_aug, aug_pol=aug_pol, l2_reg_rate=l2_reg_rate, fc_type=fc_type)
