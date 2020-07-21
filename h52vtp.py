@@ -32,7 +32,7 @@ from scipy import interpolate
 
 def h5_to_vtp(surf_file, surf_name='train_loss', log=False, zmax=-1, interp=-1):
     #set this to True to generate points
-    show_points = True
+    show_points = False
     #set this to True to generate polygons
     show_polys = True
 

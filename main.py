@@ -64,9 +64,9 @@ def main(model_type, model_path, batch_size, dataset, load_mode, fig_type, dot_n
     evaluation.crunch(surf_path, model, w, d, x_train, y_train, 'train_loss', 'train_acc', batch_size)
 
     if fig_type == '1D':
-        plot_1D.plot_1d_loss_err(surf_path, xmin=-1.0, xmax=1.0, loss_max=5, log=False, show=True)
+        plot_1D.plot_1d_loss_err(surf_path, xmin=-1.0, xmax=1.0, loss_max=5, log=False, show=False)
     elif fig_type == '2D':
-        plot_2D.plot_2d_contour(surf_path, surf_name='train_loss', vmin=0.1, vmax=10, vlevel=0.5, show=True)
+        plot_2D.plot_2d_contour(surf_path, surf_name='train_loss', vmin=0.1, vmax=10, vlevel=0.5, show=False)
 
 if __name__ == "__main__":
     
@@ -77,8 +77,8 @@ if __name__ == "__main__":
 
     tf.random.set_seed(123)
 
-    model_type = 'resnet56'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/resnet56/resnet56_128_norm_SGDNesterov_l2=0.0005_cifar_auto_234_0.9463_weights.h5"
+    model_type = 'vgg9_bn'
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_baseline_216_0.9410_weights.h5"
     dataset = 'cifar10'
     fc_type = 'avg'
     load_mode = 'tfds'
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     l2_reg_rate = 5e-4
     batch_size = 128
     add_aug = True
-    aug_pol = 'cifar_auto'
+    aug_pol = 'baseline'
     plot_history = True
     workers = 1
 
