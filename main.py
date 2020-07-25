@@ -17,7 +17,19 @@ import plot_2D
 from build_model import build_model
 
 
-def main(model_type, model_path, batch_size, dataset, load_mode, fig_type, dot_num=11, add_aug=False, aug_pol='cifar_auto', l2_reg_rate=None, fc_type=None):
+def main(model_type, 
+         model_path, 
+         batch_size=128, 
+         dataset='cifar10', 
+         load_mode='tfds',
+         add_aug=False, 
+         aug_pol='cifar_auto', 
+         l2_reg_rate=None, 
+         fc_type=None, 
+         fig_type='1D', 
+         dot_num=11,
+         loss_key='train_loss' 
+        ):
     
     try:
         model = load_model(model_path)
@@ -48,25 +60,37 @@ def main(model_type, model_path, batch_size, dataset, load_mode, fig_type, dot_n
 
     evaluation.setup_surface_file(surf_path, dir_path, set_y, num=dot_num)
 
-    if not add_aug:
-        x_train, y_train, _, _ = data_loader.load_data(dataset, load_mode=load_mode)
+    if loss_key == 'train_loss':
+        acc_key = 'train_acc'
+        if not add_aug:
+            x_set, y_set, _, _ = data_loader.load_data(dataset, load_mode=load_mode)
+            x_mean = np.mean(x_set).astype('float32')
+            x_std = np.std(x_set).astype('float32')
+            x_set = (x_set.astype('float32') - x_mean) / (x_std + 1e-7)
+        else:
+            print("Load temp dataset.")
+            temp_file_path = data_generator.set_temp_dataset(dataset, load_mode, aug_pol)
+            x_set, y_set = data_generator.load_temp_dataset(temp_file_path)
+            print("Temp dataset loaded.")
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+
+    elif loss_key == 'test_loss':
+        acc_key = 'test_acc'
+        x_train, _, x_set, y_set= data_loader.load_data(dataset, load_mode=load_mode)
         x_mean = np.mean(x_train).astype('float32')
         x_std = np.std(x_train).astype('float32')
-        x_train = (x_train.astype('float32') - x_mean) / (x_std + 1e-7)
-    else:
-        print("Load temp dataset.")
-        temp_file_path = data_generator.set_temp_dataset(dataset, load_mode, aug_pol)
-        x_train, y_train = data_generator.load_temp_dataset(temp_file_path)
-        print("Temp dataset loaded.")
-        if os.path.exists(temp_file_path):
-            os.remove(temp_file_path)
+        x_set = (x_set.astype('float32') - x_mean) / (x_std + 1e-7)
 
-    evaluation.crunch(surf_path, model, w, d, x_train, y_train, 'train_loss', 'train_acc', batch_size)
+    else:
+        raise(Exception("Unknown loss key: %s" % (loss_key)))
+
+    evaluation.crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size)
 
     if fig_type == '1D':
         plot_1D.plot_1d_loss_err(surf_path, xmin=-1.0, xmax=1.0, loss_max=5, log=False, show=False)
     elif fig_type == '2D':
-        plot_2D.plot_2d_contour(surf_path, surf_name='train_loss', vmin=0.1, vmax=10, vlevel=0.5, show=False)
+        plot_2D.plot_2d_contour(surf_path, surf_name=loss_key, vmin=0.1, vmax=10, vlevel=0.5, show=False)
 
 if __name__ == "__main__":
     
@@ -77,7 +101,7 @@ if __name__ == "__main__":
 
     tf.random.set_seed(123)
 
-    model_type = 'vgg9_bn'
+    model_type = 'vgg16_bn'
     model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_baseline_216_0.9410_weights.h5"
     dataset = 'cifar10'
     fc_type = 'avg'
@@ -97,5 +121,8 @@ if __name__ == "__main__":
 
     fig_type = '2D'
     dot_num = 25
+    loss_key = 'test_loss'
     
-    main(model_type, model_path, batch_size, dataset, load_mode, fig_type, dot_num=dot_num, add_aug=add_aug, aug_pol=aug_pol, l2_reg_rate=l2_reg_rate, fc_type=fc_type)
+    main(model_type, model_path, batch_size=batch_size, dataset=dataset, load_mode=load_mode, 
+         add_aug=add_aug, aug_pol=aug_pol, l2_reg_rate=l2_reg_rate, fc_type=fc_type,
+         fig_type=fig_type, dot_num=dot_num, loss_key=loss_key)

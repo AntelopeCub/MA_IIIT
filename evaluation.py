@@ -56,8 +56,8 @@ def set_weights(model, weights, directions=None, step=None):
     for idx in range(len(weights)):
         model.weights[idx].assign(weights[idx] + tf.convert_to_tensor(changes[idx]))
 
-def eval_loss(model, cce, x_train_list, y_train_list, batch_size):
-    total = len(x_train_list)
+def eval_loss(model, cce, x_set, y_set, batch_size):
+    total = len(x_set)
     step_num = math.ceil(total / batch_size)
     total_loss = 0
     reg_loss = 0
@@ -67,8 +67,8 @@ def eval_loss(model, cce, x_train_list, y_train_list, batch_size):
         reg_loss = np.sum(model.losses)
 
     for idx in range(step_num):
-        x = x_train_list[batch_size*idx:batch_size*(idx+1)]
-        y = y_train_list[batch_size*idx:batch_size*(idx+1)]
+        x = x_set[batch_size*idx:batch_size*(idx+1)]
+        y = y_set[batch_size*idx:batch_size*(idx+1)]
         out = model(x, training=False)
         total_loss += cce(y, out).numpy()
         eq = tf.math.equal(tf.math.argmax(out, axis=1), tf.math.argmax(y, axis=1))
@@ -79,7 +79,7 @@ def eval_loss(model, cce, x_train_list, y_train_list, batch_size):
     #sys.stdout.flush()
     return loss, acc
 
-def crunch(surf_path, model, w, d, x_train_list, y_train_list, loss_key, acc_key, batch_size=128):
+def crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size=128):
     
     f = h5py.File(surf_path, 'r+')
     losses, accuracies = [], []
@@ -103,7 +103,7 @@ def crunch(surf_path, model, w, d, x_train_list, y_train_list, loss_key, acc_key
         s2 = ycoord_mesh.ravel()
         for idx, coord in enumerate(np.c_[s1,s2]):
             set_weights(model, w, d, coord)
-            loss, acc = eval_loss(model, cce, x_train_list, y_train_list, batch_size)
+            loss, acc = eval_loss(model, cce, x_set, y_set, batch_size)
             losses.ravel()[idx] = loss
             accuracies.ravel()[idx] = acc
 
@@ -117,7 +117,7 @@ def crunch(surf_path, model, w, d, x_train_list, y_train_list, loss_key, acc_key
     else:
         for idx, coord in enumerate(xcoordinates):
             set_weights(model, w, d, coord)
-            loss, acc = eval_loss(model, cce, x_train_list, y_train_list, batch_size)
+            loss, acc = eval_loss(model, cce, x_set, y_set, batch_size)
             losses.ravel()[idx] = loss
             accuracies.ravel()[idx] = acc
 
@@ -152,6 +152,6 @@ if __name__ == "__main__":
 
     setup_surface_file(surf_path, dir_path, set_y, num=51)
 
-    x_train_list, y_train_list, _, _ = data_loader.load_data('cifar10', load_mode='tfds')
+    x_set, y_set, _, _ = data_loader.load_data('cifar10', load_mode='tfds')
 
-    crunch(surf_path, model, w, d, x_train_list, y_train_list, 'train_loss', 'train_acc', batch_size)
+    crunch(surf_path, model, w, d, x_set, y_set, 'train_loss', 'train_acc', batch_size)
