@@ -25,7 +25,8 @@ def main(model_type,
          add_aug=False, 
          aug_pol='cifar_auto', 
          l2_reg_rate=None, 
-         fc_type=None, 
+         fc_type=None,
+         dir_path=None, 
          fig_type='1D', 
          dot_num=11,
          loss_key='train_loss' 
@@ -37,21 +38,36 @@ def main(model_type,
         model = build_model(model_type, dataset, fc_type=fc_type, l2_reg_rate=l2_reg_rate).model
         model.load_weights(model_path)
     
-    dir_path = model_path[:-3] + '_' + fig_type + '.h5'
-    f = h5py.File(dir_path, 'w')
+    if dir_path == None: 
+        dir_path = model_path[:-3] + '_' + fig_type + '.h5'
+        f = h5py.File(dir_path, 'w')
 
-    xdirection = direction.creat_random_direction(model)
-    h5_util.write_list(f, 'xdirection', xdirection)
+        xdirection = direction.creat_random_direction(model)
+        h5_util.write_list(f, 'xdirection', xdirection)
 
-    if fig_type == '2D':
-        ydirection = direction.creat_random_direction(model)
-        h5_util.write_list(f, 'ydirection', ydirection)
-        set_y = True
+        if fig_type == '2D':
+            ydirection = direction.creat_random_direction(model)
+            h5_util.write_list(f, 'ydirection', ydirection)
+            set_y = True
+        else:
+            set_y = False
+        
+        f.close()
+        print("Direction file created.")
     else:
-        set_y = False
-    
-    f.close()
-    print("direction file created")
+        if os.path.exists(dir_path):
+            f = h5py.File(dir_path, 'r')
+            
+            if fig_type == '2D':
+                assert ('xdirection' in f.keys() and 'ydirection' in f.keys()), "Please set up x/y direction!"
+                set_y = True
+            elif fig_type == '1D':
+                assert 'xdirection' in f.keys(), "Please set up x direction!"
+                set_y = False
+
+            f.close()
+        else:
+            raise Exception("Direction file doesn't exist!")
 
     surf_path = dir_path[:-3] + '_surface' + '_' + str(dot_num) + '.h5'
 
@@ -83,7 +99,7 @@ def main(model_type,
         x_set = (x_set.astype('float32') - x_mean) / (x_std + 1e-7)
 
     else:
-        raise(Exception("Unknown loss key: %s" % (loss_key)))
+        raise Exception("Unknown loss key: %s" % (loss_key))
 
     evaluation.crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size)
 
