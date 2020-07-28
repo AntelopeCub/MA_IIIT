@@ -142,6 +142,10 @@ dmypy.json
 /models/*/*.h5
 /models/*/old/
 
+#png, txt files of train history
+/models/*/*.png
+/models/*/*.txt 
+
 # vs and vscode
 /.vs
 /.vscode

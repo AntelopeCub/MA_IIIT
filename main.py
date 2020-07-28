@@ -40,6 +40,20 @@ def main(model_type,
     
     if dir_path == None: 
         dir_path = model_path[:-3] + '_' + fig_type + '.h5'
+    
+    if os.path.exists(dir_path):
+        print("Direction file is already created.")
+        f = h5py.File(dir_path, 'r')
+        
+        if fig_type == '2D':
+            assert ('xdirection' in f.keys() and 'ydirection' in f.keys()), "Please setup x/y direction!"
+            set_y = True
+        elif fig_type == '1D':
+            assert 'xdirection' in f.keys(), "Please setup x direction!"
+            set_y = False
+
+        f.close()
+    else:
         f = h5py.File(dir_path, 'w')
 
         xdirection = direction.creat_random_direction(model)
@@ -54,22 +68,8 @@ def main(model_type,
         
         f.close()
         print("Direction file created.")
-    else:
-        if os.path.exists(dir_path):
-            f = h5py.File(dir_path, 'r')
-            
-            if fig_type == '2D':
-                assert ('xdirection' in f.keys() and 'ydirection' in f.keys()), "Please set up x/y direction!"
-                set_y = True
-            elif fig_type == '1D':
-                assert 'xdirection' in f.keys(), "Please set up x direction!"
-                set_y = False
 
-            f.close()
-        else:
-            raise Exception("Direction file doesn't exist!")
-
-    surf_path = dir_path[:-3] + '_surface' + '_' + str(dot_num) + '.h5'
+    surf_path = dir_path[:-3] + '_surface' + '_' + str(dot_num) + '_' + loss_key + '.h5'
 
     w = direction.get_weights(model)
     d = evaluation.load_directions(dir_path)
@@ -117,8 +117,8 @@ if __name__ == "__main__":
 
     tf.random.set_seed(123)
 
-    model_type = 'vgg16_bn'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_baseline_216_0.9410_weights.h5"
+    model_type = 'resnet56'
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/resnet56/resnet56_128_norm_SGDNesterov_l2=0.0005_baseline_216_0.9444_weights.h5"
     dataset = 'cifar10'
     fc_type = 'avg'
     load_mode = 'tfds'
@@ -136,9 +136,10 @@ if __name__ == "__main__":
         model.model.save(model_path)
 
     fig_type = '2D'
-    dot_num = 25
-    loss_key = 'test_loss'
+    dot_num_list = [25, 51]
+    loss_key_list = ['train_loss', 'test_loss']
     
-    main(model_type, model_path, batch_size=batch_size, dataset=dataset, load_mode=load_mode, 
-         add_aug=add_aug, aug_pol=aug_pol, l2_reg_rate=l2_reg_rate, fc_type=fc_type,
-         fig_type=fig_type, dot_num=dot_num, loss_key=loss_key)
+    for loss_key, dot_num in zip(loss_key_list, dot_num_list):
+        main(model_type, model_path, batch_size=batch_size, dataset=dataset, load_mode=load_mode, 
+             add_aug=add_aug, aug_pol=aug_pol, l2_reg_rate=l2_reg_rate, fc_type=fc_type,
+             fig_type=fig_type, dot_num=dot_num, loss_key=loss_key)
