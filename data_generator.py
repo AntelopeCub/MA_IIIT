@@ -31,6 +31,7 @@ class Image_Generator(tf.keras.utils.Sequence):
         self.y_set = y_set
         self.batch_size = batch_size
         self.policies = get_auto_policies(aug_pol)
+        self.aug_pol = aug_pol
         #self._set_probs()
 
         if x_mean is None:
@@ -51,11 +52,12 @@ class Image_Generator(tf.keras.utils.Sequence):
         y_batch = self.y_set[self.batch_size * step_idx : self.batch_size * (step_idx + 1)]
 
         x_batch = []
-        for x_idx, idx in enumerate(range(self.batch_size * step_idx, self.batch_size * (step_idx + 1) if self.batch_size * (step_idx + 1) < len(self.x_set) else len(self.x_set))):
+        for x_idx, idx in enumerate(range(self.batch_size * step_idx, min(self.batch_size * (step_idx + 1), len(self.x_set)))):
             x = np.copy(self.x_set[idx])
-            new_policy = self.policies[np.random.randint(len(self.policies))] if len(self.policies) > 0 else []
-            new_policy = [{'op': 'mrx', 'prob': 0.5, 'mag': 0}] + list(new_policy)
-            new_policy = new_policy + [{'op': 'p&c', 'prob': 1, 'mag': 0}, {'op': 'cut', 'prob': 1, 'mag': 5}]
+            #new_policy = self.policies[np.random.randint(len(self.policies))] if len(self.policies) > 0 else []
+            #new_policy = [{'op': 'mrx', 'prob': 0.5, 'mag': 0}] + list(new_policy)
+            #new_policy = new_policy + [{'op': 'p&c', 'prob': 1, 'mag': 0}, {'op': 'cut', 'prob': 1, 'mag': 5}]
+            new_policy = creat_new_policy(self.policies, self.aug_pol)
             x = add_autoaugment(x, new_policy)
             x = np.asarray(x, dtype=np.float32)
             x_batch.append(x)
@@ -94,9 +96,10 @@ def set_temp_dataset(dataset, load_mode, aug_pol):
     x_train_aug = []
     for idx in range(len(x_train)):
         x = np.copy(x_train[idx])
-        new_policy = policies[np.random.randint(len(policies))] if len(policies) > 0 else []
-        new_policy = [{'op': 'mrx', 'prob': 0.5, 'mag': 0}] + list(new_policy)
-        new_policy = new_policy + [{'op': 'p&c', 'prob': 1, 'mag': 0}, {'op': 'cut', 'prob': 1, 'mag': 5}]
+        #new_policy = policies[np.random.randint(len(policies))] if len(policies) > 0 else []
+        #new_policy = [{'op': 'mrx', 'prob': 0.5, 'mag': 0}] + list(new_policy)
+        #new_policy = new_policy + [{'op': 'p&c', 'prob': 1, 'mag': 0}, {'op': 'cut', 'prob': 1, 'mag': 5}]
+        new_policy = creat_new_policy(policies, aug_pol)
         x = add_autoaugment(x, new_policy)
         x = np.asarray(x, dtype=np.float32)
         x = (x - x_mean) / (x_std + 1e-7)
@@ -128,3 +131,22 @@ def load_temp_dataset(temp_file_path):
     #os.remove(temp_file_path)
 
     return x_train, y_train
+
+def creat_new_policy(policies, aug_pol):
+
+    if 'base' in aug_pol:
+        new_policy = []
+    else:
+        new_policy = policies[np.random.randint(len(policies))]
+        
+    if 'cifar' in aug_pol:
+        new_policy = [{'op': 'mrx', 'prob': 0.5, 'mag': 0}] + list(new_policy)
+        new_policy = new_policy + [{'op': 'p&c', 'prob': 1.0, 'mag': 0}, {'op': 'cut', 'prob': 1, 'mag': 5}]
+
+    elif 'svhn' in aug_pol:
+        new_policy = new_policy + [{'op': 'cut', 'prob': 1.0, 'mag': 6.25}]
+
+    else:
+        raise Exception('Unknown policy: %s' % (aug_pol))
+
+    return new_policy

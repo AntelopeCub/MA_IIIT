@@ -109,13 +109,19 @@ def add_autoaugment(img, policy):
 
                 #cutout
                 elif p['op'] == 'cut':
-                    mag = 1 - p['mag'] / 10.
-                    pxls = (np.random.randint(int(shape[1]*mag)), np.random.randint(int(shape[0]*mag)))
+                    #mag = 1 - p['mag'] / 10.
+                    #pxls = (np.random.randint(int(shape[1]*mag)), np.random.randint(int(shape[0]*mag)))
+                    box_size = int(shape[0] * p['mag'] / 20.)
+                    box_center = (np.random.randint(shape[1]), np.random.randint(shape[0]))
+                    box_w1 = box_center[0]-box_size
+                    box_h1 = box_center[1]-box_size
+                    box_w2 = box_center[0]+box_size
+                    box_h2 = box_center[1]+box_size
                     draw = ImageDraw.Draw(img)
-                    draw.rectangle([pxls[0], pxls[1], pxls[0]+16, pxls[1]+16], fill=tuple(fcol))
+                    draw.rectangle([box_w1, box_h1, box_w2, box_h2], fill=tuple(fcol))
 
                 else:
-                    raise(Exception('Unknown augment operation: %s' % (p['op'])))
+                    raise Exception('Unknown augment operation: %s' % (p['op']))
             
     img = np.asarray(img, dtype=np.uint8)
 
@@ -126,7 +132,10 @@ def get_auto_policies(name):
     name = name.lower()
     policies = []
 
-    if 'cifar' in name:
+    if 'base' in name:
+        policies = []
+    
+    elif 'cifar' in name:
         policies.append(({'op': 'inv', 'prob': 0.1, 'mag': 7}, {'op': 'con', 'prob': 0.2, 'mag': 6}))
         policies.append(({'op': 'rot', 'prob': 0.7, 'mag': 2}, {'op': 'tlx', 'prob': 0.3, 'mag': 9}))
         policies.append(({'op': 'sha', 'prob': 0.8, 'mag': 1}, {'op': 'sha', 'prob': 0.9, 'mag': 3}))
@@ -153,11 +162,35 @@ def get_auto_policies(name):
         policies.append(({'op': 'eqz', 'prob': 0.8, 'mag': 8}, {'op': 'inv', 'prob': 0.1, 'mag': 3}))
         policies.append(({'op': 'tly', 'prob': 0.7, 'mag': 9}, {'op': 'auc', 'prob': 0.9, 'mag': 1}))
 
-    elif name == 'baseline':
-        policies = []
+    elif 'svhn' in name:
+        policies.append(({'op': 'srx', 'prob': 0.9, 'mag': 4}, {'op': 'inv', 'prob': 0.2, 'mag': 3}))
+        policies.append(({'op': 'sry', 'prob': 0.9, 'mag': 8}, {'op': 'inv', 'prob': 0.7, 'mag': 5}))
+        policies.append(({'op': 'eqz', 'prob': 0.6, 'mag': 5}, {'op': 'sol', 'prob': 0.6, 'mag': 6}))
+        policies.append(({'op': 'inv', 'prob': 0.9, 'mag': 3}, {'op': 'eqz', 'prob': 0.6, 'mag': 3}))
+        policies.append(({'op': 'eqz', 'prob': 0.6, 'mag': 1}, {'op': 'rot', 'prob': 0.9, 'mag': 3}))
+        policies.append(({'op': 'srx', 'prob': 0.9, 'mag': 4}, {'op': 'auc', 'prob': 0.8, 'mag': 3}))
+        policies.append(({'op': 'sry', 'prob': 0.9, 'mag': 8}, {'op': 'inv', 'prob': 0.4, 'mag': 5}))
+        policies.append(({'op': 'sry', 'prob': 0.9, 'mag': 5}, {'op': 'sol', 'prob': 0.2, 'mag': 6}))
+        policies.append(({'op': 'inv', 'prob': 0.9, 'mag': 6}, {'op': 'auc', 'prob': 0.8, 'mag': 1}))
+        policies.append(({'op': 'eqz', 'prob': 0.6, 'mag': 3}, {'op': 'rot', 'prob': 0.9, 'mag': 3}))
+        policies.append(({'op': 'srx', 'prob': 0.9, 'mag': 4}, {'op': 'sol', 'prob': 0.3, 'mag': 3}))
+        policies.append(({'op': 'sry', 'prob': 0.8, 'mag': 8}, {'op': 'inv', 'prob': 0.7, 'mag': 4}))
+        policies.append(({'op': 'eqz', 'prob': 0.9, 'mag': 5}, {'op': 'tly', 'prob': 0.6, 'mag': 6}))
+        policies.append(({'op': 'inv', 'prob': 0.9, 'mag': 4}, {'op': 'eqz', 'prob': 0.6, 'mag': 7}))
+        policies.append(({'op': 'con', 'prob': 0.3, 'mag': 3}, {'op': 'rot', 'prob': 0.8, 'mag': 4}))
+        policies.append(({'op': 'inv', 'prob': 0.8, 'mag': 5}, {'op': 'tly', 'prob': 0.0, 'mag': 3}))
+        policies.append(({'op': 'sry', 'prob': 0.7, 'mag': 6}, {'op': 'sol', 'prob': 0.4, 'mag': 8}))
+        policies.append(({'op': 'inv', 'prob': 0.6, 'mag': 4}, {'op': 'rot', 'prob': 0.8, 'mag': 4}))
+        policies.append(({'op': 'sry', 'prob': 0.3, 'mag': 7}, {'op': 'tlx', 'prob': 0.9, 'mag': 4}))
+        policies.append(({'op': 'srx', 'prob': 0.1, 'mag': 6}, {'op': 'inv', 'prob': 0.6, 'mag': 5}))
+        policies.append(({'op': 'sol', 'prob': 0.7, 'mag': 2}, {'op': 'tly', 'prob': 0.6, 'mag': 7}))
+        policies.append(({'op': 'sry', 'prob': 0.8, 'mag': 4}, {'op': 'inv', 'prob': 0.8, 'mag': 8}))
+        policies.append(({'op': 'srx', 'prob': 0.7, 'mag': 9}, {'op': 'tly', 'prob': 0.8, 'mag': 3}))
+        policies.append(({'op': 'sry', 'prob': 0.8, 'mag': 5}, {'op': 'auc', 'prob': 0.7, 'mag': 3}))
+        policies.append(({'op': 'srx', 'prob': 0.7, 'mag': 2}, {'op': 'inv', 'prob': 0.1, 'mag': 5}))
 
     else:
-        raise(Exception('Unknown policy: %s' % (name)))
+        raise Exception('Unknown policy: %s' % (name))
 
     return policies
 
