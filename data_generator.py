@@ -54,9 +54,6 @@ class Image_Generator(tf.keras.utils.Sequence):
         x_batch = []
         for x_idx, idx in enumerate(range(self.batch_size * step_idx, min(self.batch_size * (step_idx + 1), len(self.x_set)))):
             x = np.copy(self.x_set[idx])
-            #new_policy = self.policies[np.random.randint(len(self.policies))] if len(self.policies) > 0 else []
-            #new_policy = [{'op': 'mrx', 'prob': 0.5, 'mag': 0}] + list(new_policy)
-            #new_policy = new_policy + [{'op': 'p&c', 'prob': 1, 'mag': 0}, {'op': 'cut', 'prob': 1, 'mag': 5}]
             new_policy = creat_new_policy(self.policies, self.aug_pol)
             x = add_autoaugment(x, new_policy)
             x = np.asarray(x, dtype=np.float32)
@@ -96,9 +93,6 @@ def set_temp_dataset(dataset, load_mode, aug_pol):
     x_train_aug = []
     for idx in range(len(x_train)):
         x = np.copy(x_train[idx])
-        #new_policy = policies[np.random.randint(len(policies))] if len(policies) > 0 else []
-        #new_policy = [{'op': 'mrx', 'prob': 0.5, 'mag': 0}] + list(new_policy)
-        #new_policy = new_policy + [{'op': 'p&c', 'prob': 1, 'mag': 0}, {'op': 'cut', 'prob': 1, 'mag': 5}]
         new_policy = creat_new_policy(policies, aug_pol)
         x = add_autoaugment(x, new_policy)
         x = np.asarray(x, dtype=np.float32)
@@ -140,11 +134,11 @@ def creat_new_policy(policies, aug_pol):
         new_policy = policies[np.random.randint(len(policies))]
         
     if 'cifar' in aug_pol:
-        new_policy = [{'op': 'mrx', 'prob': 0.5, 'mag': 0}] + list(new_policy)
-        new_policy = new_policy + [{'op': 'p&c', 'prob': 1.0, 'mag': 0}, {'op': 'cut', 'prob': 1, 'mag': 5}]
+        new_policy = [{'op': 'mrx', 'prob': 0.5, 'mag': 0}, {'op': 'p&c', 'prob': 1.0, 'mag': 0}] + list(new_policy)
+        new_policy = new_policy + [{'op': 'cut', 'prob': 1, 'mag': 5}]
 
     elif 'svhn' in aug_pol:
-        new_policy = new_policy + [{'op': 'cut', 'prob': 1.0, 'mag': 6.25}]
+        new_policy = list(new_policy) + [{'op': 'cut', 'prob': 1.0, 'mag': 6.25}]
 
     else:
         raise Exception('Unknown policy: %s' % (aug_pol))
