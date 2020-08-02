@@ -5,6 +5,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import copy
 
 import h5py
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 
@@ -32,8 +33,19 @@ def normalize_directions_for_weights(direction, weights):
             norm_direction.append(normalize_direction(d, w))
     return norm_direction
 
-def normalize_direction(d, w):
-    return (d * tf.norm(w) / (tf.norm(d) + 1e-10))
+def normalize_direction(direction, weights):
+    direction_filter = np.moveaxis(direction, -1, 0)
+    weights_filter = np.moveaxis(weights, -1, 0)
+
+    norm_direction_list = []
+    for d, w in zip(direction_filter, weights_filter):
+        d_filter = d * np.linalg.norm(w) / (np.linalg.norm(d) + 1e-10)
+        norm_direction_list.append(d_filter)
+    
+    filter_norm_direction = np.moveaxis(np.asarray(norm_direction_list), 0, -1)
+    filter_norm_direction = tf.convert_to_tensor(filter_norm_direction)
+
+    return filter_norm_direction
 
 if __name__ == "__main__":
 
