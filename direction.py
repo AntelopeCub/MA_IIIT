@@ -34,15 +34,15 @@ def normalize_directions_for_weights(direction, weights):
     return norm_direction
 
 def normalize_direction(direction, weights):
-    direction_filter = np.moveaxis(direction, -1, 0)
-    weights_filter = np.moveaxis(weights, -1, 0)
+    direction_filter = np.transpose(direction)
+    weights_filter = np.transpose(weights)
 
     norm_direction_list = []
     for d, w in zip(direction_filter, weights_filter):
         d_filter = d * np.linalg.norm(w) / (np.linalg.norm(d) + 1e-10)
         norm_direction_list.append(d_filter)
     
-    filter_norm_direction = np.moveaxis(np.asarray(norm_direction_list), 0, -1)
+    filter_norm_direction = np.transpose(np.asarray(norm_direction_list))
     filter_norm_direction = tf.convert_to_tensor(filter_norm_direction)
 
     return filter_norm_direction
