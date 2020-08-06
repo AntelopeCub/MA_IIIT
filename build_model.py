@@ -80,6 +80,8 @@ class build_model(object):
         elif dataset in ['cifar100']:
             self.num_class = 100
             self.input_shape = (32, 32, 3)
+        else:
+            raise Exception('Unknown Dataset: %s' % (dataset))
 
         self.dataset = dataset
 
