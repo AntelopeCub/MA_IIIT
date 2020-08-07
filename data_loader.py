@@ -9,6 +9,8 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 from tensorflow.keras.preprocessing import image
 
+import tfrecord
+
 dataset_root_path = 'd:/dataset/'
 
 def load_data(dataset, load_mode='tfds'):
@@ -52,6 +54,15 @@ def load_data(dataset, load_mode='tfds'):
         y_train_list = tf.keras.utils.to_categorical(y_train_list)
         y_test_list = tf.keras.utils.to_categorical(y_test_list)
         x_train_list, y_train_list, x_test_list, y_test_list = shuffle_data(x_train_list, y_train_list, x_test_list, y_test_list)
+
+    elif load_mode == 'tfrd':
+        x_train_list, y_train_list, x_test_list, y_test_list = tfrecord.read_record(dataset_root_path + 'tfrd/', dataset)
+        y_train_list = tf.keras.utils.to_categorical(y_train_list)
+        y_test_list = tf.keras.utils.to_categorical(y_test_list)
+        x_train_list, y_train_list, x_test_list, y_test_list = shuffle_data(x_train_list, y_train_list, x_test_list, y_test_list)
+
+    else:
+        raise Exception('Unknown load_mode: %s' % (load_mode))
         
     return x_train_list, y_train_list, x_test_list, y_test_list
             
@@ -73,12 +84,11 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    x_train_list, y_train_list, x_test_list, y_test_list = load_data('cifar10', load_mode='tfds')
+    x_train_list, y_train_list, x_test_list, y_test_list = load_data('svhn_equal', load_mode='tfrd')
     mid_time = time.time()
     print(mid_time - start_time)
 
-    x_train_list, y_train_list, x_test_list, y_test_list = load_data('cifar10', load_mode='path')
-    end_time = time.time()
-    print(end_time - mid_time)
-
-    a = 1
+    a = np.random.randint(100)
+    _ = plt.imshow(x_test_list[a].astype('float32') / 255.)
+    b = np.argmax(y_test_list[a])
+    plt.show()

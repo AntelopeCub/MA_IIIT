@@ -88,8 +88,9 @@ def main(model_type,
             temp_file_path = data_generator.set_temp_dataset(dataset, load_mode, aug_pol)
             x_set, y_set = data_generator.load_temp_dataset(temp_file_path)
             print("Temp dataset loaded.")
-            if os.path.exists(temp_file_path):
-                os.remove(temp_file_path)
+            #if os.path.exists(temp_file_path):
+            #    os.remove(temp_file_path)
+            data_generator.remove_temp_dataset(temp_file_path)
 
     elif loss_key == 'test_loss':
         acc_key = 'test_acc'
@@ -117,16 +118,16 @@ if __name__ == "__main__":
 
     tf.random.set_seed(123)
 
-    model_type = 'resnet56'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/resnet56/resnet56_128_norm_SGDNesterov_l2=0.0005_baseline_216_0.9444_weights.h5"
-    dataset = 'cifar10'
+    model_type = 'vgg16_bn'
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_svhn_equal_124_0.9648_weights.h5"
+    dataset = 'svhn_equal'
     fc_type = 'avg'
-    load_mode = 'tfds'
+    load_mode = 'path' if dataset == 'svhn_equal' else 'tfds'
     train_model = False
     l2_reg_rate = 5e-4
     batch_size = 128
-    add_aug = True
-    aug_pol = 'baseline'
+    add_aug = False
+    aug_pol = 'svhn_auto'
     plot_history = True
     workers = 1
 
@@ -136,7 +137,7 @@ if __name__ == "__main__":
         model.model.save(model_path)
 
     fig_type = '2D'
-    dot_num_list = [25, 51]
+    dot_num_list = [21, 21]
     loss_key_list = ['train_loss', 'test_loss']
     
     for loss_key, dot_num in zip(loss_key_list, dot_num_list):
