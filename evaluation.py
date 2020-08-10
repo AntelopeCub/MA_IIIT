@@ -15,16 +15,19 @@ import direction
 import h5_util
 
 
-def setup_surface_file(surf_path, dir_path, set_y, num=51):
+def setup_surface_file(surf_path, dir_path, set_y, num=51, l_range=(-1, 1)):
+    l_min = l_range[0]
+    l_max = l_range[1]
+    assert l_min < l_max, 'Invalid range: ' + str(l_range)
 
     f = h5py.File(surf_path, 'a')
     f['dir_path'] = dir_path
 
-    xcoordinates = np.linspace(-1, 1, num=num)
+    xcoordinates = np.linspace(l_min, l_max, num=num)
     f['xcoordinates'] = xcoordinates
 
     if set_y:
-        ycoordinates = np.linspace(-1, 1, num=num)
+        ycoordinates = np.linspace(l_min, l_max, num=num)
         f['ycoordinates'] = ycoordinates
 
     f.close()

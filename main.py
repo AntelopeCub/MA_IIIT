@@ -29,6 +29,7 @@ def main(model_type,
          dir_path=None, 
          fig_type='1D', 
          dot_num=11,
+         l_range=(-1, 1),
          loss_key='train_loss' 
         ):
     
@@ -74,7 +75,7 @@ def main(model_type,
     w = direction.get_weights(model)
     d = evaluation.load_directions(dir_path)
 
-    evaluation.setup_surface_file(surf_path, dir_path, set_y, num=dot_num)
+    evaluation.setup_surface_file(surf_path, dir_path, set_y, num=dot_num, l_range=l_range)
 
     if loss_key == 'train_loss':
         acc_key = 'train_acc'
@@ -105,7 +106,7 @@ def main(model_type,
     evaluation.crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size)
 
     if fig_type == '1D':
-        plot_1D.plot_1d_loss_err(surf_path, xmin=-1.0, xmax=1.0, loss_max=5, log=False, show=False)
+        plot_1D.plot_1d_loss_err(surf_path, xmin=l_range[0], xmax=l_range[1], loss_max=5, log=False, show=False)
     elif fig_type == '2D':
         plot_2D.plot_2d_contour(surf_path, surf_name=loss_key, vmin=0.1, vmax=10, vlevel=0.5, show=False)
 
@@ -118,16 +119,16 @@ if __name__ == "__main__":
 
     tf.random.set_seed(123)
 
-    model_type = 'vgg16_bn'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_svhn_equal_124_0.9648_weights.h5"
-    dataset = 'svhn_equal'
+    model_type = 'vgg9_bn'
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_auto_246_0.9526_weights.h5"
+    dataset = 'cifar10'
     fc_type = 'avg'
-    load_mode = 'path' if dataset == 'svhn_equal' else 'tfds'
+    load_mode = 'tfrd' if dataset == 'svhn_equal' else 'tfds'
     train_model = False
     l2_reg_rate = 5e-4
     batch_size = 128
-    add_aug = False
-    aug_pol = 'svhn_auto'
+    add_aug = True
+    aug_pol = 'cifar_auto'
     plot_history = True
     workers = 1
 
@@ -137,10 +138,11 @@ if __name__ == "__main__":
         model.model.save(model_path)
 
     fig_type = '2D'
-    dot_num_list = [21, 21]
+    dot_num_list = [3, 3]
+    l_range = (-0.2, 0.2)
     loss_key_list = ['train_loss', 'test_loss']
     
     for loss_key, dot_num in zip(loss_key_list, dot_num_list):
         main(model_type, model_path, batch_size=batch_size, dataset=dataset, load_mode=load_mode, 
              add_aug=add_aug, aug_pol=aug_pol, l2_reg_rate=l2_reg_rate, fc_type=fc_type,
-             fig_type=fig_type, dot_num=dot_num, loss_key=loss_key)
+             fig_type=fig_type, dot_num=dot_num, l_range=l_range, loss_key=loss_key)
