@@ -81,6 +81,7 @@ def shuffle_data(x_train_list, y_train_list, x_test_list, y_test_list):
 if __name__ == "__main__":
 
     import time
+    import matplotlib.pyplot as plt
 
     start_time = time.time()
 

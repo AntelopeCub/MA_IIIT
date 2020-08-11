@@ -119,15 +119,15 @@ if __name__ == "__main__":
 
     tf.random.set_seed(123)
 
-    model_type = 'vgg9_bn'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_auto_246_0.9526_weights.h5"
+    model_type = 'vgg9_qn'
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_qn_128_norm_SGDNesterov_l2=0.0005_avg_cifar10_062_0.8725_weights.h5"
     dataset = 'cifar10'
     fc_type = 'avg'
     load_mode = 'tfrd' if dataset == 'svhn_equal' else 'tfds'
     train_model = False
     l2_reg_rate = 5e-4
     batch_size = 128
-    add_aug = True
+    add_aug = False
     aug_pol = 'cifar_auto'
     plot_history = True
     workers = 1
@@ -138,8 +138,8 @@ if __name__ == "__main__":
         model.model.save(model_path)
 
     fig_type = '2D'
-    dot_num_list = [3, 3]
-    l_range = (-0.2, 0.2)
+    dot_num_list = [25, 51]
+    l_range = (-1, 1)
     loss_key_list = ['train_loss', 'test_loss']
     
     for loss_key, dot_num in zip(loss_key_list, dot_num_list):

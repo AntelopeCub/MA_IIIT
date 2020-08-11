@@ -16,7 +16,7 @@ from tensorflow.keras.optimizers import SGD
 import data_generator
 import data_loader
 from build_resnet import ResNet56
-from build_vgg import VGG9_BN, VGG16_BN, VGG9_no_BN
+from build_vgg import VGG9_BN, VGG9_QN, VGG16_BN, VGG9_no_BN
 
 
 def lr_decay(epoch):
@@ -87,8 +87,10 @@ class build_model(object):
 
         if l2_reg_rate is not None:
             self.l2_reg = regularizers.l2(l=l2_reg_rate)
+            self.l2_reg_rate = l2_reg_rate
         else:
             self.l2_reg = None
+            self.l2_reg_rate = 0
 
         self.fc_type = fc_type
 
@@ -96,6 +98,8 @@ class build_model(object):
             self.model = VGG9_no_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'vgg9_bn':
             self.model = VGG9_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
+        elif model_type == 'vgg9_qn':
+            self.model = VGG9_QN(self.input_shape, l2_reg_rate=self.l2_reg_rate, num_class=self.num_class)
         elif model_type == 'vgg16_bn':
             self.model = VGG16_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'resnet56':
