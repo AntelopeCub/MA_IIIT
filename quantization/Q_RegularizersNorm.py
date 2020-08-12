@@ -4,7 +4,7 @@ from tensorflow.keras import regularizers
 
 
 class max_weights_reg(regularizers.Regularizer):
-    def __init__(self, L_W=[2,6], lm=0.1, l2=0, l1=0):
+    def __init__(self, L_W=[2,6], lm=1e2, l2=0, l1=0):
         self.L_W = L_W
         self.w_max = 2**(L_W[0]-1)- 2**(-L_W[1]-1)
         self.l2 = l2
