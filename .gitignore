@@ -155,3 +155,7 @@ dmypy.json
 
 # test files
 test*.py
+
+# Temporarily ignored
+/models
+*.pdf

@@ -16,7 +16,7 @@ from tensorflow.keras.optimizers import SGD
 import data_generator
 import data_loader
 from build_resnet import ResNet56
-from build_vgg import VGG9_BN, VGG9_QN, VGG16_BN, VGG9_no_BN
+from build_vgg import VGG9_BN, VGG9_QN, VGG16_BN, VGG16_QN, VGG9_no_BN
 
 
 def lr_decay(epoch):
@@ -100,6 +100,8 @@ class build_model(object):
             self.model = VGG9_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'vgg9_qn':
             self.model = VGG9_QN(self.input_shape, l2_reg_rate=self.l2_reg_rate, num_class=self.num_class)
+        elif model_type == 'vgg16_qn':
+            self.model = VGG16_QN(self.input_shape, l2_reg_rate=self.l2_reg_rate, num_class=self.num_class)
         elif model_type == 'vgg16_bn':
             self.model = VGG16_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'resnet56':
@@ -112,7 +114,10 @@ class build_model(object):
         else:
             self.optimizer = optimizer
 
-        self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+        if 'qn' in self.model_type:
+            self.model.compile(optimizer=self.optimizer, loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
+        else:
+            self.model.compile(optimizer=self.optimizer, loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False), metrics=['accuracy'])
 
         x_train, y_train, x_test, y_test = data_loader.load_data(self.dataset, load_mode=load_mode)
         x_mean = np.mean(x_train).astype('float32')

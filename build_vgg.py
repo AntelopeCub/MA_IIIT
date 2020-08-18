@@ -214,13 +214,129 @@ def VGG9_QN(input_shape, l2_reg_rate=0, num_class=10, L_A=[3, 5], L_W=[1, 7]):
     model.add(ActivationLayer_signed(L_A=[L_A[0], L_A[1]]))
 
     model.add(GlobalAveragePooling2D())
-    model.add(Softmax())
+    #model.add(Softmax())
 
     return model
+
+def VGG16_QN(input_shape, l2_reg_rate=0, num_class=10, L_A=[3, 5], L_W=[1, 7]):
+    if l2_reg_rate != 0:
+        l2_reg = regularizers.l2(l=l2_reg_rate)
+    else:
+        l2_reg = None
+    model = Sequential()
+    model.add(Conv2dNorm(64, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W,
+                         input_shape=input_shape))
+    model.add(Conv2dNorm(64, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W))
+    model.add(MaxPooling2D())
+
+    model.add(Conv2dNorm(128, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W))
+    model.add(Conv2dNorm(128, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W))
+    model.add(MaxPooling2D())
+
+    model.add(Conv2dNorm(256, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W))
+    model.add(Conv2dNorm(256, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W))
+    model.add(Conv2dNorm(256, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W))
+    model.add(MaxPooling2D())
+
+    model.add(Conv2dNorm(512, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W))
+    model.add(Conv2dNorm(512, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W))
+    model.add(Conv2dNorm(512, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W))
+    model.add(MaxPooling2D())
+
+    model.add(Conv2dNorm(512, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W))
+    model.add(Conv2dNorm(512, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W))
+    model.add(Conv2dNorm(512, kernel_size=(3, 3),
+                         padding='same',
+                         use_bias=False,
+                         kernel_initializer='he_normal',
+                         kernel_regularizer=l2_reg,
+                         L_A=L_A,
+                         L_W=L_W))
+    model.add(MaxPooling2D())
+
+    model.add(ActivationLayer_signed(L_A=[L_A[0], L_A[1]]))
+
+    model.add(GlobalAveragePooling2D())
+    #model.add(Softmax())
+
+    return model
+
 
 
 if __name__ == "__main__":
     #model = VGG16_BN((32,32,3), None, fc_type='avg')
     from tensorflow.keras import regularizers
-    model = VGG9_QN((32,32,3), l2_reg_rate=5e-4, num_class=10, L_A=[3, 5], L_W=[1, 7])
+    model = VGG16_QN((32,32,3), l2_reg_rate=5e-4, num_class=10, L_A=[3, 5], L_W=[1, 7])
     model.summary()
