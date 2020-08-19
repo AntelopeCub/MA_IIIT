@@ -106,6 +106,8 @@ class build_model(object):
             self.model = VGG16_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'resnet56':
             self.model = ResNet56(input_shape=self.input_shape, num_class=self.num_class, l2_reg=self.l2_reg)
+        else:
+            raise Exception('Unknown model type: %s' % model_type)
 
     def train_model(self, optimizer=None, batch_size=128, epochs=20, load_mode='tfds', plot_history=False, add_aug=False, aug_pol='baseline', callbacks=None, workers=1):
         

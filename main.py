@@ -103,7 +103,12 @@ def main(model_type,
     else:
         raise Exception("Unknown loss key: %s" % (loss_key))
 
-    evaluation.crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size)
+    if 'qn' in model_type:
+        from_logits = True
+    else:
+        from_logits = False
+
+    evaluation.crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size=batch_size, from_logits=from_logits)
 
     if fig_type == '1D':
         plot_1D.plot_1d_loss_err(surf_path, xmin=l_range[0], xmax=l_range[1], loss_max=5, log=False, show=False)
@@ -120,7 +125,7 @@ if __name__ == "__main__":
     tf.random.set_seed(123)
 
     model_type = 'vgg9_qn'
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_qn_128_norm_SGDNesterov_l2=0.0005_avg_cifar10_062_0.8725_weights.h5"
+    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_qn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_auto_199_0.9095_weights.h5"
     dataset = 'cifar10'
     fc_type = 'avg'
     load_mode = 'tfrd' if dataset == 'svhn_equal' else 'tfds'

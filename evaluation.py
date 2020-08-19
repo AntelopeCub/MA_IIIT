@@ -82,7 +82,7 @@ def eval_loss(model, cce, x_set, y_set, batch_size):
     #sys.stdout.flush()
     return loss, acc
 
-def crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size=128):
+def crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size=128, from_logits=False):
     
     f = h5py.File(surf_path, 'r+')
     losses, accuracies = [], []
@@ -96,7 +96,7 @@ def crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size=1
         f[loss_key] = losses
         f[acc_key] = accuracies
 
-    cce = tf.keras.losses.CategoricalCrossentropy(reduction=tf.keras.losses.Reduction.SUM)
+    cce = tf.keras.losses.CategoricalCrossentropy(reduction=tf.keras.losses.Reduction.SUM, from_logits=from_logits)
 
     start_time = time.time()
 
