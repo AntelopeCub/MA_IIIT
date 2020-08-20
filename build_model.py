@@ -74,7 +74,7 @@ class build_model(object):
 
         self.model_type = model_type
 
-        if dataset in ['cifar10', 'svhn_equal']:
+        if dataset in ['cifar10', 'svhn_equal', 'cifar10_pre']:
             self.num_class = 10
             self.input_shape = (32, 32, 3)
         elif dataset in ['cifar100']:

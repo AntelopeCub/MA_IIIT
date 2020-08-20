@@ -205,7 +205,6 @@ def VGG9_QN(input_shape, l2_reg_rate=0, num_class=10, L_A=[3, 5], L_W=[1, 7]):
                          L_W=L_W))
     model.add(MaxPooling2D())
     
-    '''
     model.add(Conv2D(num_class, name='c1x1_2d',
                      kernel_size=(1,1),
                      use_bias=False,
@@ -216,13 +215,6 @@ def VGG9_QN(input_shape, l2_reg_rate=0, num_class=10, L_A=[3, 5], L_W=[1, 7]):
 
     model.add(GlobalAveragePooling2D())
     #model.add(Softmax())
-    '''
-
-    model.add(GlobalAveragePooling2D())
-    model.add(Dropout(0.5))
-
-    model.add(Dense(num_class, kernel_initializer='he_normal', kernel_regularizer=max_weights_reg(L_W=L_W, l2=l2_reg_rate)))
-    model.add(ActivationLayer_signed(L_A=[L_A[0], L_A[1]]))
 
     return model
 
@@ -334,7 +326,6 @@ def VGG16_QN(input_shape, l2_reg_rate=0, num_class=10, L_A=[3, 5], L_W=[1, 7]):
                          L_W=L_W))
     model.add(MaxPooling2D())
 
-    '''
     model.add(Conv2D(num_class, name='c1x1_2d',
                      kernel_size=(1,1),
                      use_bias=False,
@@ -345,13 +336,6 @@ def VGG16_QN(input_shape, l2_reg_rate=0, num_class=10, L_A=[3, 5], L_W=[1, 7]):
 
     model.add(GlobalAveragePooling2D())
     #model.add(Softmax())
-    '''
-
-    model.add(GlobalAveragePooling2D())
-    model.add(Dropout(0.5))
-
-    model.add(Dense(num_class, kernel_initializer='he_normal', kernel_regularizer=max_weights_reg(L_W=L_W, l2=l2_reg_rate)))
-    model.add(ActivationLayer_signed(L_A=[L_A[0], L_A[1]]))
 
     return model
 
