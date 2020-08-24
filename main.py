@@ -15,24 +15,25 @@ import h5_util
 import plot_1D
 import plot_2D
 from build_model import build_model
+from quantization.build_vgg_qn import CUSTOM_OBJ
 
 
 def main(model_type, 
          model_path, 
-         batch_size=128, 
-         dataset='cifar10', 
-         load_mode='tfds',
-         add_aug=False, 
-         aug_pol='cifar_auto', 
-         l2_reg_rate=None, 
-         fc_type=None,
-         dir_path=None, 
-         fig_type='1D', 
-         dot_num=11,
-         l_range=(-1, 1),
-         loss_key='train_loss' 
+         batch_size = 128, 
+         dataset    = 'cifar10', 
+         load_mode  = 'tfrd',
+         add_aug    = False, 
+         aug_pol    = 'cifar_auto', 
+         l2_reg_rate= None, 
+         fc_type    = None,
+         dir_path   = None, 
+         fig_type   = '1D', 
+         dot_num    = 11,
+         l_range    = (-1, 1),
+         loss_key   = 'train_loss',
         ):
-    
+
     try:
         model = load_model(model_path)
     except Exception as e:
@@ -103,12 +104,7 @@ def main(model_type,
     else:
         raise Exception("Unknown loss key: %s" % (loss_key))
 
-    if 'qn' in model_type:
-        from_logits = True
-    else:
-        from_logits = False
-
-    evaluation.crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size=batch_size, from_logits=from_logits)
+    evaluation.crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, batch_size=batch_size)
 
     if fig_type == '1D':
         plot_1D.plot_1d_loss_err(surf_path, xmin=l_range[0], xmax=l_range[1], loss_max=5, log=False, show=False)

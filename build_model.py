@@ -17,6 +17,7 @@ import data_generator
 import data_loader
 from build_resnet import ResNet56
 from build_vgg import VGG9_BN, VGG9_QN, VGG16_BN, VGG16_QN, VGG9_no_BN
+from quantization.build_vgg_qn import f_build_vgg_qua
 
 
 def lr_decay(epoch):
@@ -99,11 +100,11 @@ class build_model(object):
         elif model_type == 'vgg9_bn':
             self.model = VGG9_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'vgg9_qn':
-            self.model = VGG9_QN(self.input_shape, l2_reg_rate=self.l2_reg_rate, num_class=self.num_class)
-        elif model_type == 'vgg16_qn':
-            self.model = VGG16_QN(self.input_shape, l2_reg_rate=self.l2_reg_rate, num_class=self.num_class)
+            self.model = f_build_vgg_qua(self.input_shape, self.l2_reg_rate, self.num_class, L_A=[3, 5], L_W=[1, 7], layers='7')
         elif model_type == 'vgg16_bn':
             self.model = VGG16_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
+        elif model_type == 'vgg16_qn':
+            self.model = f_build_vgg_qua(self.input_shape, self.l2_reg_rate, self.num_class, L_A=[3, 5], L_W=[1, 7], layers='13')
         elif model_type == 'resnet56':
             self.model = ResNet56(input_shape=self.input_shape, num_class=self.num_class, l2_reg=self.l2_reg)
         else:

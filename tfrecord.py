@@ -76,7 +76,9 @@ def extract_record(file_list):
 
 if __name__ == "__main__":
 
-    dataset = 'svhn_equal'
+    import matplotlib.pyplot as plt
+
+    dataset = 'cifar10_pre'
 
     '''
     train_path = os.path.join('D:/dataset/temp/', dataset + "-train.tfrecord")

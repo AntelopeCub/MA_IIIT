@@ -54,9 +54,45 @@ def  plot_3d_surface(surf_path, surf_name='train_loss', show=False):
         plt.show()
 
 
-if __name__ == "__main__":
+def set_surface_zeros(surf_path_list, surf_name='train_loss'):
+    Z_list = []
 
+    for surf_path in surf_path_list:
+        f = h5py.File(surf_path, 'r')
+        if surf_name in f.keys():
+            Z_list.append(np.array(f[surf_name][:]))
+        else:
+            raise Exception('%s is not in surface file: %s' % (surf_name, surf_path))
+        f.close()
+    
+    Z_list = np.asarray(Z_list)
+    Z_min = np.min(Z_list)
+    
+    Z_list = Z_list - Z_min
+    for Z, surf_path in zip(Z_list, surf_path_list):
+        f = h5py.File(surf_path, 'r+')
+        
+        if surf_name+'_zeros' in f.keys():
+            f[surf_name+'_zeros'][:] = Z.tolist()
+        else:
+            f[surf_name+'_zeros'] = Z.tolist()
+
+        f.flush()
+        f.close()
+    
+
+if __name__ == "__main__":
+    
+    '''
     surf_path = "D:/Rain/text/Python/MA_IIIT/models/vgg16/surface/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_auto_247_0.9507_weights_same_surface_51_test_loss.h5"
 
     plot_2d_contour(surf_path, surf_name='test_acc', vmin=0.1, vmax=15, vlevel=0.2, show=True)
     #plot_3d_surface(surf_path, surf_name='train_loss', show=True)
+    '''
+
+    surf_path_list = [
+        'D:/Rain/text/Python/MA_IIIT/models/vgg9/surface/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar10_pre_127_0.9105_weights_-1_1_same_surface_25_train_loss.h5',
+        'D:/Rain/text/Python/MA_IIIT/models/vgg9/surface/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar10_pre_cifar_base_195_0.9451_weights_-1_1_same_surface_25_train_loss.h5',
+    ]
+
+    set_surface_zeros(surf_path_list=surf_path_list, surf_name='train_loss')

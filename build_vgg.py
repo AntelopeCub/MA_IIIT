@@ -207,11 +207,11 @@ def VGG9_QN(input_shape, l2_reg_rate=0, num_class=10, L_A=[3, 5], L_W=[1, 7]):
     
     model.add(Conv2D(num_class, name='c1x1_2d',
                      kernel_size=(1,1),
-                     use_bias=False,
+                     use_bias=True,
                      kernel_initializer='he_normal',
                      kernel_regularizer=max_weights_reg(L_W=L_W, l2=l2_reg_rate)))
 
-    model.add(ActivationLayer_signed(L_A=[L_A[0], L_A[1]]))
+    model.add(ActivationLayer_signed(L_A=L_A))
 
     model.add(GlobalAveragePooling2D())
     #model.add(Softmax())
@@ -301,7 +301,7 @@ def VGG16_QN(input_shape, l2_reg_rate=0, num_class=10, L_A=[3, 5], L_W=[1, 7]):
                          kernel_regularizer=l2_reg,
                          L_A=L_A,
                          L_W=L_W))
-    model.add(MaxPooling2D())
+    #model.add(MaxPooling2D())
 
     model.add(Conv2dNorm(512, kernel_size=(3, 3),
                          padding='same',
@@ -324,15 +324,15 @@ def VGG16_QN(input_shape, l2_reg_rate=0, num_class=10, L_A=[3, 5], L_W=[1, 7]):
                          kernel_regularizer=l2_reg,
                          L_A=L_A,
                          L_W=L_W))
-    model.add(MaxPooling2D())
+    #model.add(MaxPooling2D())
 
     model.add(Conv2D(num_class, name='c1x1_2d',
                      kernel_size=(1,1),
-                     use_bias=False,
+                     use_bias=True,
                      kernel_initializer='he_normal',
                      kernel_regularizer=max_weights_reg(L_W=L_W, l2=l2_reg_rate)))
 
-    model.add(ActivationLayer_signed(L_A=[L_A[0], L_A[1]]))
+    model.add(ActivationLayer_signed(L_A=L_A))
 
     model.add(GlobalAveragePooling2D())
     #model.add(Softmax())

@@ -159,3 +159,4 @@ test*.py
 # Temporarily ignored
 /models
 *.pdf
+MA_IIIT.py

@@ -13,6 +13,7 @@ import tensorflow as tf
 import data_loader
 import direction
 import h5_util
+from quantization.build_vgg_qn import f_convert_model, CUSTOM_OBJ
 
 
 def setup_surface_file(surf_path, dir_path, set_y, num=51, l_range=(-1, 1)):
@@ -59,14 +60,14 @@ def set_weights(model, weights, directions=None, step=None):
     for idx in range(len(weights)):
         model.weights[idx].assign(weights[idx] + tf.convert_to_tensor(changes[idx]))
 
-def eval_loss(model, cce, x_set, y_set, batch_size):
+def eval_loss(model, model_type, cce, x_set, y_set, batch_size, from_logits=False):
     total = len(x_set)
     step_num = math.ceil(total / batch_size)
     total_loss = 0
     reg_loss = 0
     correct = 0
 
-    if len(model.losses) > 0:
+    if len(model.losses) > 0 and ('qn' not in model_type):
         reg_loss = np.sum(model.losses)
 
     for idx in range(step_num):
@@ -82,7 +83,7 @@ def eval_loss(model, cce, x_set, y_set, batch_size):
     #sys.stdout.flush()
     return loss, acc
 
-def crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size=128, from_logits=False):
+def crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, batch_size=128):
     
     f = h5py.File(surf_path, 'r+')
     losses, accuracies = [], []
@@ -96,6 +97,11 @@ def crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size=1
         f[loss_key] = losses
         f[acc_key] = accuracies
 
+    if 'qn' in model_type:
+        from_logits = True
+    else:
+        from_logits = False
+
     cce = tf.keras.losses.CategoricalCrossentropy(reduction=tf.keras.losses.Reduction.SUM, from_logits=from_logits)
 
     start_time = time.time()
@@ -104,23 +110,43 @@ def crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size=1
         xcoord_mesh, ycoord_mesh = np.meshgrid(xcoordinates, ycoordinates)
         s1 = xcoord_mesh.ravel()
         s2 = ycoord_mesh.ravel()
-        for idx, coord in enumerate(np.c_[s1,s2]):
-            set_weights(model, w, d, coord)
-            loss, acc = eval_loss(model, cce, x_set, y_set, batch_size)
-            losses.ravel()[idx] = loss
-            accuracies.ravel()[idx] = acc
+        coords = np.c_[s1,s2]
+    else:
+        coords = xcoordinates
 
-            f[loss_key][:] = losses
-            f[acc_key][:] = accuracies
-            f.flush()
+    for idx, coord in enumerate(coords):
+        set_weights(model, w, d, coord)
+        if 'qn' in model_type:
+            model_conv = f_convert_model(model, tf.keras.optimizers.Nadam(), L_W=[1, 7], L_A=[3, 5], custom_obj=CUSTOM_OBJ)
+            loss, acc = eval_loss(model_conv, model_type, cce, x_set, y_set, batch_size, from_logits=from_logits)
+            del model_conv
+        else:
+            loss, acc = eval_loss(model, model_type, cce, x_set, y_set, batch_size, from_logits=from_logits)
 
-            print('coord=%s, \tloss: %f, acc: %f' % (str(coord), loss, acc))
-            sys.stdout.flush()
+        tf.keras.backend.clear_session()
 
+        losses.ravel()[idx] = loss
+        accuracies.ravel()[idx] = acc
+
+        f[loss_key][:] = losses
+        f[acc_key][:] = accuracies
+        f.flush()
+
+        print('coord=%s, \tloss: %f, acc: %f' % (str(coord), loss, acc))
+        sys.stdout.flush()
+
+    '''
     else:
         for idx, coord in enumerate(xcoordinates):
             set_weights(model, w, d, coord)
-            loss, acc = eval_loss(model, cce, x_set, y_set, batch_size)
+            if 'qn' in model_type:
+                model_conv = f_convert_model(model, tf.keras.optimizers.Nadam(), L_W=[1, 7], L_A=[3, 5], custom_obj=CUSTOM_OBJ)
+                loss, acc = eval_loss(model_conv, model_type, cce, x_set, y_set, batch_size, from_logits=from_logits)
+            else:
+                loss, acc = eval_loss(model, model_type, cce, x_set, y_set, batch_size, from_logits=from_logits)
+
+            tf.keras.backend.clear_session()
+
             losses.ravel()[idx] = loss
             accuracies.ravel()[idx] = acc
 
@@ -130,6 +156,7 @@ def crunch(surf_path, model, w, d, x_set, y_set, loss_key, acc_key, batch_size=1
 
             print('coord=%s, \tloss: %f, acc: %f' % (str(coord), loss, acc))
             sys.stdout.flush()
+    '''
 
     f.close()
     total_time = time.time() - start_time
