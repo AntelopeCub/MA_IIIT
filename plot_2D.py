@@ -4,6 +4,8 @@ import numpy as np
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
+from h52vtp import h5_to_vtp
+
 
 def plot_2d_contour(surf_path, surf_name='train_loss', vmin=0.1, vmax=10, vlevel=0.5, show=False):
     f = h5py.File(surf_path, 'r')
@@ -56,29 +58,31 @@ def  plot_3d_surface(surf_path, surf_name='train_loss', show=False):
 
 def set_surface_zeros(surf_path_list, surf_name='train_loss'):
     Z_list = []
+    Z_min = 10
 
     for surf_path in surf_path_list:
         f = h5py.File(surf_path, 'r')
         if surf_name in f.keys():
             Z_list.append(np.array(f[surf_name][:]))
+            Z_min = np.minimum(np.min(np.array(f[surf_name][:])), Z_min)
         else:
             raise Exception('%s is not in surface file: %s' % (surf_name, surf_path))
         f.close()
     
     Z_list = np.asarray(Z_list)
-    Z_min = np.min(Z_list)
-    
-    Z_list = Z_list - Z_min
     for Z, surf_path in zip(Z_list, surf_path_list):
         f = h5py.File(surf_path, 'r+')
         
         if surf_name+'_zeros' in f.keys():
-            f[surf_name+'_zeros'][:] = Z.tolist()
+            f[surf_name+'_zeros'][:] = (Z-Z_min).tolist()
         else:
-            f[surf_name+'_zeros'] = Z.tolist()
+            f[surf_name+'_zeros'] = (Z-Z_min).tolist()
 
         f.flush()
         f.close()
+
+    for surf_path in surf_path_list:
+        h5_to_vtp(surf_path, surf_name=surf_name+'_zeros', zmax=10)
     
 
 if __name__ == "__main__":
@@ -91,8 +95,8 @@ if __name__ == "__main__":
     '''
 
     surf_path_list = [
-        'D:/Rain/text/Python/MA_IIIT/models/vgg9/surface/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar10_pre_127_0.9105_weights_-1_1_same_surface_25_train_loss.h5',
-        'D:/Rain/text/Python/MA_IIIT/models/vgg9/surface/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar10_pre_cifar_base_195_0.9451_weights_-1_1_same_surface_25_train_loss.h5',
+        'D:/Rain/text/Python/MA_IIIT/models/vgg16/surface/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_base_212_0.9486_weights_same_surface_25_train_loss.h5',
+        'D:/Rain/text/Python/MA_IIIT/models/vgg16/quantization/vgg16_qn_128_norm_Nadam_l2=0.0005_avg_cifar10_cifar_base_096_0.9113_weights_-1_1_same_surface_21_train_loss.h5',
     ]
 
     set_surface_zeros(surf_path_list=surf_path_list, surf_name='train_loss')
