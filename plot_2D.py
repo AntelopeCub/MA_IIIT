@@ -57,28 +57,19 @@ def  plot_3d_surface(surf_path, surf_name='train_loss', show=False):
 
 
 def set_surface_zeros(surf_path_list, surf_name='train_loss'):
-    Z_list = []
-    Z_min = 10
 
     for surf_path in surf_path_list:
-        f = h5py.File(surf_path, 'r')
+        f = h5py.File(surf_path, 'r+')
         if surf_name in f.keys():
-            Z_list.append(np.array(f[surf_name][:]))
-            Z_min = np.minimum(np.min(np.array(f[surf_name][:])), Z_min)
+            Z = np.array(f[surf_name][:])
+            Z_min = np.min(Z)
+            if surf_name+'_zeros' in f.keys():
+                f[surf_name+'_zeros'][:] = (Z-Z_min).tolist()
+            else:
+                f[surf_name+'_zeros'] = (Z-Z_min).tolist()
+            f.flush()
         else:
             raise Exception('%s is not in surface file: %s' % (surf_name, surf_path))
-        f.close()
-    
-    Z_list = np.asarray(Z_list)
-    for Z, surf_path in zip(Z_list, surf_path_list):
-        f = h5py.File(surf_path, 'r+')
-        
-        if surf_name+'_zeros' in f.keys():
-            f[surf_name+'_zeros'][:] = (Z-Z_min).tolist()
-        else:
-            f[surf_name+'_zeros'] = (Z-Z_min).tolist()
-
-        f.flush()
         f.close()
 
     for surf_path in surf_path_list:
