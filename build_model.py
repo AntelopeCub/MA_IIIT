@@ -71,7 +71,7 @@ class Cyclic_LR_Scheduler():
 
 class build_model(object):
 
-    def __init__(self, model_type, dataset, l2_reg_rate=None, fc_type=None):
+    def __init__(self, model_type, dataset, l2_reg_rate=None, fc_type=None, pre_mode='norm'):
 
         self.model_type = model_type
 
@@ -85,6 +85,7 @@ class build_model(object):
             raise Exception('Unknown Dataset: %s' % (dataset))
 
         self.dataset = dataset
+        self.pre_mode = pre_mode
 
         if l2_reg_rate is not None:
             self.l2_reg = regularizers.l2(l=l2_reg_rate)
@@ -126,11 +127,13 @@ class build_model(object):
         x_mean = np.mean(x_train).astype('float32')
         x_std = np.std(x_train).astype('float32')
         if add_aug:
-            train_gen = data_generator.Image_Generator(x_train, y_train, batch_size, aug_pol, x_mean=x_mean, x_std=x_std)
+            train_gen = data_generator.Image_Generator(x_train, y_train, batch_size, aug_pol, x_mean=x_mean, x_std=x_std, pre_mode=self.pre_mode)
         else:
-            x_train = (x_train.astype('float32') - x_mean) / (x_std + 1e-7)
+            #x_train = (x_train.astype('float32') - x_mean) / (x_std + 1e-7)
+            x_train = data_generator.preprocess_input(x_train, x_mean, x_std, mode=self.pre_mode)
         
-        x_test = (x_test.astype('float32') - x_mean) / (x_std + 1e-7)
+        #x_test = (x_test.astype('float32') - x_mean) / (x_std + 1e-7)
+        x_test = data_generator.preprocess_input(x_test, x_mean, x_std, mode=self.pre_mode)
 
         if not add_aug:
             self.history = self.model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epochs, batch_size=batch_size, callbacks=callbacks, workers=workers)

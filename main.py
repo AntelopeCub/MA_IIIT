@@ -23,6 +23,7 @@ def main(model_type,
          batch_size = 128, 
          dataset    = 'cifar10', 
          load_mode  = 'tfrd',
+         pre_mode   = 'norm',
          add_aug    = False, 
          aug_pol    = 'cifar_auto', 
          l2_reg_rate= None, 
@@ -84,10 +85,11 @@ def main(model_type,
             x_set, y_set, _, _ = data_loader.load_data(dataset, load_mode=load_mode)
             x_mean = np.mean(x_set).astype('float32')
             x_std = np.std(x_set).astype('float32')
-            x_set = (x_set.astype('float32') - x_mean) / (x_std + 1e-7)
+            #x_set = (x_set.astype('float32') - x_mean) / (x_std + 1e-7)
+            x_set = data_generator.preprocess_input(x_set, x_mean, x_std, pre_mode=pre_mode)
         else:
             print("Load temp dataset.")
-            temp_file_path = data_generator.set_temp_dataset(dataset, load_mode, aug_pol)
+            temp_file_path = data_generator.set_temp_dataset(dataset, load_mode, aug_pol, pre_mode=pre_mode)
             x_set, y_set = data_generator.load_temp_dataset(temp_file_path)
             print("Temp dataset loaded.")
             #if os.path.exists(temp_file_path):
@@ -99,7 +101,8 @@ def main(model_type,
         x_train, _, x_set, y_set= data_loader.load_data(dataset, load_mode=load_mode)
         x_mean = np.mean(x_train).astype('float32')
         x_std = np.std(x_train).astype('float32')
-        x_set = (x_set.astype('float32') - x_mean) / (x_std + 1e-7)
+        #x_set = (x_set.astype('float32') - x_mean) / (x_std + 1e-7)
+        x_set = data_generator.preprocess_input(x_set, x_mean, x_std, pre_mode=pre_mode
 
     else:
         raise Exception("Unknown loss key: %s" % (loss_key))
@@ -125,6 +128,8 @@ if __name__ == "__main__":
     dataset = 'cifar10'
     fc_type = 'avg'
     load_mode = 'tfrd' if dataset == 'svhn_equal' else 'tfds'
+    #pre_mode = 'norm'
+    pre_mode = 'scale' if dataset == 'cifar10_pre' else 'norm'
     train_model = False
     l2_reg_rate = 5e-4
     batch_size = 128
@@ -145,5 +150,5 @@ if __name__ == "__main__":
     
     for loss_key, dot_num in zip(loss_key_list, dot_num_list):
         main(model_type, model_path, batch_size=batch_size, dataset=dataset, load_mode=load_mode, 
-             add_aug=add_aug, aug_pol=aug_pol, l2_reg_rate=l2_reg_rate, fc_type=fc_type,
+             pre_mode=pre_mode, add_aug=add_aug, aug_pol=aug_pol, l2_reg_rate=l2_reg_rate, fc_type=fc_type,
              fig_type=fig_type, dot_num=dot_num, l_range=l_range, loss_key=loss_key)

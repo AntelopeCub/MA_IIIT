@@ -27,7 +27,8 @@ class Image_Generator(tf.keras.utils.Sequence):
         batch_size,
         aug_pol,
         x_mean=None,
-        x_std=None
+        x_std=None,
+        pre_mode='norm'
         ):
 
         self.x_set = x_set
@@ -35,6 +36,7 @@ class Image_Generator(tf.keras.utils.Sequence):
         self.batch_size = batch_size
         self.policies = get_auto_policies(aug_pol)
         self.aug_pol = aug_pol
+        self.pre_mode = pre_mode
         #self._set_probs()
 
         if x_mean is None:
@@ -62,8 +64,9 @@ class Image_Generator(tf.keras.utils.Sequence):
             x = np.asarray(x, dtype=np.float32)
             x_batch.append(x)
 
-        x_batch = np.asarray(x_batch)
-        x_batch = (x_batch - self.x_mean) / (self.x_std + 1e-7)
+        #x_batch = np.asarray(x_batch)
+        #x_batch = (x_batch - self.x_mean) / (self.x_std + 1e-7)
+        x_batch = preprocess_input(x_batch, self.x_mean, self.x_std, mode=self.pre_mode)
         y_batch = np.asarray(y_batch)
 
         return x_batch, y_batch
@@ -81,8 +84,17 @@ class Image_Generator(tf.keras.utils.Sequence):
         np.random.shuffle(shuffle_list)
         self.x_set = self.x_set[shuffle_list]
         self.y_set = self.y_set[shuffle_list]
+
+def preprocess_input(img, img_mean, img_std, mode='norm'):
+    if mode == 'norm':
+        img = (np.array(img, dtype=np.float32) - img_mean) / (img_std + 1e-7)
+    elif mode == 'scale':
+        img = (np.array(img, dtype=np.float32) - 128.) / 32.
+    else:
+        raise Exception('Unknown preprocess mode: %s' % mode)
+    return img
         
-def set_temp_dataset(dataset, load_mode, aug_pol):
+def set_temp_dataset(dataset, load_mode, aug_pol, pre_mode='norm'):
     x_train, y_train, _, _ = data_loader.load_data(dataset, load_mode=load_mode)
     x_mean = np.mean(x_train).astype('float32')
     x_std = np.std(x_train).astype('float32')
@@ -102,8 +114,9 @@ def set_temp_dataset(dataset, load_mode, aug_pol):
         x = np.copy(x_train[idx])
         new_policy = creat_new_policy(policies, aug_pol)
         x = add_autoaugment(x, new_policy)
-        x = np.asarray(x, dtype=np.float32)
-        x = (x - x_mean) / (x_std + 1e-7)
+        #x = np.asarray(x, dtype=np.float32)
+        #x = (x - x_mean) / (x_std + 1e-7)
+        x = preprocess_input(x, x_mean, x_std, mode=pre_mode)
         x_train_aug.append(x)
 
     x_train_aug = np.asarray(x_train_aug)
