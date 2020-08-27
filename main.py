@@ -86,7 +86,7 @@ def main(model_type,
             x_mean = np.mean(x_set).astype('float32')
             x_std = np.std(x_set).astype('float32')
             #x_set = (x_set.astype('float32') - x_mean) / (x_std + 1e-7)
-            x_set = data_generator.preprocess_input(x_set, x_mean, x_std, pre_mode=pre_mode)
+            x_set = data_generator.preprocess_input(x_set, x_mean, x_std, mode=pre_mode)
         else:
             print("Load temp dataset.")
             temp_file_path = data_generator.set_temp_dataset(dataset, load_mode, aug_pol, pre_mode=pre_mode)
@@ -102,7 +102,7 @@ def main(model_type,
         x_mean = np.mean(x_train).astype('float32')
         x_std = np.std(x_train).astype('float32')
         #x_set = (x_set.astype('float32') - x_mean) / (x_std + 1e-7)
-        x_set = data_generator.preprocess_input(x_set, x_mean, x_std, pre_mode=pre_mode)
+        x_set = data_generator.preprocess_input(x_set, x_mean, x_std, mode=pre_mode)
 
     else:
         raise Exception("Unknown loss key: %s" % (loss_key))
