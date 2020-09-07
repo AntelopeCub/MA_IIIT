@@ -33,6 +33,7 @@ def main(model_type,
          dot_num    = 11,
          l_range    = (-1, 1),
          loss_key   = 'train_loss',
+         add_reg    = True,
         ):
 
     try:
@@ -72,7 +73,7 @@ def main(model_type,
         f.close()
         print("Direction file created.")
 
-    surf_path = dir_path[:-3] + '_surface' + '_' + str(dot_num) + '_' + loss_key + '.h5'
+    surf_path = dir_path[:-3] + '_surface' + '_' + str(dot_num) + '_' + loss_key + '_add_reg=' + str(add_reg) +'.h5'
 
     w = direction.get_weights(model)
     d = evaluation.load_directions(dir_path)
@@ -107,7 +108,7 @@ def main(model_type,
     else:
         raise Exception("Unknown loss key: %s" % (loss_key))
 
-    evaluation.crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, batch_size=batch_size)
+    evaluation.crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, batch_size=batch_size, add_reg=add_reg)
 
     if fig_type == '1D':
         plot_1D.plot_1d_loss_err(surf_path, xmin=l_range[0], xmax=l_range[1], loss_max=5, log=False, show=False)
@@ -147,8 +148,9 @@ if __name__ == "__main__":
     dot_num_list = [25, 51]
     l_range = (-1, 1)
     loss_key_list = ['train_loss', 'test_loss']
+    add_reg = True
     
     for loss_key, dot_num in zip(loss_key_list, dot_num_list):
         main(model_type, model_path, batch_size=batch_size, dataset=dataset, load_mode=load_mode, 
              pre_mode=pre_mode, add_aug=add_aug, aug_pol=aug_pol, l2_reg_rate=l2_reg_rate, fc_type=fc_type,
-             fig_type=fig_type, dot_num=dot_num, l_range=l_range, loss_key=loss_key)
+             fig_type=fig_type, dot_num=dot_num, l_range=l_range, loss_key=loss_key, add_reg=add_reg)

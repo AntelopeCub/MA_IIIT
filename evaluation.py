@@ -60,14 +60,14 @@ def set_weights(model, weights, directions=None, step=None):
     for idx in range(len(weights)):
         model.weights[idx].assign(weights[idx] + tf.convert_to_tensor(changes[idx]))
 
-def eval_loss(model, model_type, cce, x_set, y_set, batch_size, from_logits=False):
+def eval_loss(model, model_type, cce, x_set, y_set, batch_size, from_logits=False, add_reg=True):
     total = len(x_set)
     step_num = math.ceil(total / batch_size)
     total_loss = 0
     reg_loss = 0
     correct = 0
 
-    if len(model.losses) > 0 and ('qn' not in model_type):
+    if len(model.losses) > 0 and ('qn' not in model_type) and add_reg:
         reg_loss = np.sum(model.losses)
 
     for idx in range(step_num):
@@ -83,7 +83,7 @@ def eval_loss(model, model_type, cce, x_set, y_set, batch_size, from_logits=Fals
     #sys.stdout.flush()
     return loss, acc
 
-def crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, batch_size=128):
+def crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, batch_size=128, add_reg=True):
     
     f = h5py.File(surf_path, 'r+')
     losses, accuracies = [], []
@@ -118,10 +118,10 @@ def crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, 
         set_weights(model, w, d, coord)
         if 'qn' in model_type:
             model_conv = f_convert_model(model, tf.keras.optimizers.Nadam(), L_W=[1, 7], L_A=[3, 5], custom_obj=CUSTOM_OBJ)
-            loss, acc = eval_loss(model_conv, model_type, cce, x_set, y_set, batch_size, from_logits=from_logits)
+            loss, acc = eval_loss(model_conv, model_type, cce, x_set, y_set, batch_size, from_logits=from_logits, add_reg=add_reg)
             del model_conv
         else:
-            loss, acc = eval_loss(model, model_type, cce, x_set, y_set, batch_size, from_logits=from_logits)
+            loss, acc = eval_loss(model, model_type, cce, x_set, y_set, batch_size, from_logits=from_logits, add_reg=add_reg)
 
         tf.keras.backend.clear_session()
 
@@ -134,29 +134,6 @@ def crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, 
 
         print('coord=%s, \tloss: %f, acc: %f' % (str(coord), loss, acc))
         sys.stdout.flush()
-
-    '''
-    else:
-        for idx, coord in enumerate(xcoordinates):
-            set_weights(model, w, d, coord)
-            if 'qn' in model_type:
-                model_conv = f_convert_model(model, tf.keras.optimizers.Nadam(), L_W=[1, 7], L_A=[3, 5], custom_obj=CUSTOM_OBJ)
-                loss, acc = eval_loss(model_conv, model_type, cce, x_set, y_set, batch_size, from_logits=from_logits)
-            else:
-                loss, acc = eval_loss(model, model_type, cce, x_set, y_set, batch_size, from_logits=from_logits)
-
-            tf.keras.backend.clear_session()
-
-            losses.ravel()[idx] = loss
-            accuracies.ravel()[idx] = acc
-
-            f[loss_key][:] = losses
-            f[acc_key][:] = accuracies
-            f.flush()
-
-            print('coord=%s, \tloss: %f, acc: %f' % (str(coord), loss, acc))
-            sys.stdout.flush()
-    '''
 
     f.close()
     total_time = time.time() - start_time
