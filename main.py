@@ -73,7 +73,10 @@ def main(model_type,
         f.close()
         print("Direction file created.")
 
-    surf_path = dir_path[:-3] + '_surface' + '_' + str(dot_num) + '_' + loss_key + '_add_reg=' + str(add_reg) +'.h5'
+    if 'qn' not in model_type:
+        surf_path = dir_path[:-3] + '_surface' + '_' + str(dot_num) + '_' + loss_key + '_add_reg=' + str(add_reg) +'.h5'
+    else:
+        surf_path = dir_path[:-3] + '_surface' + '_' + str(dot_num) + '_' + loss_key +'.h5'
 
     w = direction.get_weights(model)
     d = evaluation.load_directions(dir_path)
