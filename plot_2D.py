@@ -72,8 +72,55 @@ def set_surface_zeros(surf_path_list, surf_name='train_loss'):
             raise Exception('%s is not in surface file: %s' % (surf_name, surf_path))
         f.close()
 
-    for surf_path in surf_path_list:
         h5_to_vtp(surf_path, surf_name=surf_name+'_zeros', zmax=10)
+
+
+def cal_curv(surf_path_list, surf_name='train_loss'):
+
+    for surf_path in surf_path_list:
+        f = h5py.File(surf_path, 'r+')
+        if surf_name in f.keys():
+            Z = np.array(f[surf_name][:])
+            dx, dy = np.gradient(Z)
+            dxx, dxy = np.gradient(dx)
+            dyx, dyy = np.gradient(dy)
+            nu = (1 + dx * dx) * dyy - 2 * dx * dy * dxy + (1 + dy * dy) * dxx
+            de = 2 * np.power((1 + dx * dx + dy * dy), 1.5)
+            curv = nu / de
+            if surf_name+'_curv' in f.keys():
+                f[surf_name+'_curv'][:] = curv.tolist()
+            else:
+                f[surf_name+'_curv'] = curv.tolist()
+            f.flush()
+        else:
+            raise Exception('%s is not in surface file: %s' % (surf_name, surf_path))
+        f.close()
+        
+        h5_to_vtp(surf_path, surf_name=surf_name+'_curv', zmax=1)
+
+
+def cal_angle(surf_path_list, surf_name='train_loss'):
+
+    for surf_path in surf_path_list:
+        f = h5py.File(surf_path, 'r+')
+        if surf_name in f.keys():
+            Z = np.array(f[surf_name][:])
+            dx, dy = np.gradient(Z)
+            norm_vect = np.concatenate((np.expand_dims(dx, axis=-1), np.expand_dims(dy, axis=-1), np.expand_dims(-np.ones_like(Z), axis=-1)), axis=-1)
+            angle = np.zeros_like(Z)
+            for i in range(norm_vect.shape[0]):
+                for j in range(norm_vect.shape[1]):
+                    angle[i][j] = np.arccos(1. / np.linalg.norm(norm_vect[i][j]))
+            if surf_name+'_angle' in f.keys():
+                f[surf_name+'_angle'][:] = angle.tolist()
+            else:
+                f[surf_name+'_angle'] = angle.tolist()
+            f.flush()
+        else:
+            raise Exception('%s is not in surface file: %s' % (surf_name, surf_path))
+        f.close()
+        
+        h5_to_vtp(surf_path, surf_name=surf_name+'_angle', zmax=1)
     
 
 if __name__ == "__main__":
@@ -85,9 +132,11 @@ if __name__ == "__main__":
     #plot_3d_surface(surf_path, surf_name='train_loss', show=True)
     '''
 
-    surf_path_list = [
-        'D:/Rain/text/Python/MA_IIIT/models/vgg16/surface/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_base_212_0.9486_weights_same_surface_25_train_loss.h5',
-        'D:/Rain/text/Python/MA_IIIT/models/vgg16/quantization/vgg16_qn_128_norm_Nadam_l2=0.0005_avg_cifar10_cifar_base_096_0.9113_weights_-1_1_same_surface_21_train_loss.h5',
+    surf_path_list = [        
+        'C:/Users/Rain/Desktop/surface/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_base_212_0.9486_weights_-0.2_0.2_same_surface_41_test_loss_add_reg=False.h5',
+        'C:/Users/Rain/Desktop/surface/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_auto_237_0.9561_weights_-0.2_0.2_same_surface_41_test_loss_add_reg=False.h5',        
     ]
 
-    set_surface_zeros(surf_path_list=surf_path_list, surf_name='train_loss')
+    #set_surface_zeros(surf_path_list=surf_path_list, surf_name='test_loss')
+    #cal_curv(surf_path_list=surf_path_list, surf_name='test_loss')
+    cal_angle(surf_path_list=surf_path_list, surf_name='test_loss')

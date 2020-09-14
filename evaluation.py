@@ -14,6 +14,7 @@ import data_loader
 import direction
 import h5_util
 from quantization.build_vgg_qn import f_convert_model, CUSTOM_OBJ
+from quantization.Q_Discretization import weight_discretization
 
 
 def setup_surface_file(surf_path, dir_path, set_y, num=51, l_range=(-1, 1)):
@@ -117,7 +118,10 @@ def crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, 
     for idx, coord in enumerate(coords):
         set_weights(model, w, d, coord)
         if 'qn' in model_type:
-            model_conv = f_convert_model(model, tf.keras.optimizers.Nadam(), L_W=[1, 7], L_A=[3, 5], custom_obj=CUSTOM_OBJ)
+            L_A=[3, 5] #[3, 5]
+            L_W=[1, 7] #[1, 7]
+            model_conv = f_convert_model(model, tf.keras.optimizers.Nadam(), L_W=L_W, L_A=L_A, custom_obj=CUSTOM_OBJ)
+            model_conv = weight_discretization(model_conv, L_CONV=L_W, L_FC=L_W)
             loss, acc = eval_loss(model_conv, model_type, cce, x_set, y_set, batch_size, from_logits=from_logits, add_reg=add_reg)
             del model_conv
         else:
