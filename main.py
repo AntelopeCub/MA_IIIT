@@ -23,6 +23,8 @@ def main(model_type,
          batch_size = 128, 
          dataset    = 'cifar10', 
          load_mode  = 'tfrd',
+         L_A        = [3, 5],
+         L_W        = [1, 7],
          pre_mode   = 'norm',
          add_aug    = False, 
          aug_pol    = 'cifar_auto', 
@@ -39,7 +41,7 @@ def main(model_type,
     try:
         model = load_model(model_path)
     except Exception as e:
-        model = build_model(model_type, dataset, fc_type=fc_type, l2_reg_rate=l2_reg_rate).model
+        model = build_model(model_type, dataset, fc_type=fc_type, l2_reg_rate=l2_reg_rate, L_A=L_A, L_W=L_W).model
         model.load_weights(model_path)
     
     if dir_path == None: 
@@ -111,13 +113,14 @@ def main(model_type,
     else:
         raise Exception("Unknown loss key: %s" % (loss_key))
 
-    evaluation.crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, batch_size=batch_size, add_reg=add_reg)
-
+    evaluation.crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, batch_size=batch_size, add_reg=add_reg, L_A=L_A, L_W=L_W)
+    '''
     if fig_type == '1D':
         plot_1D.plot_1d_loss_err(surf_path, xmin=l_range[0], xmax=l_range[1], loss_max=5, log=False, show=False)
     elif fig_type == '2D':
         plot_2D.plot_2d_contour(surf_path, surf_name=loss_key, vmin=0.1, vmax=10, vlevel=0.5, show=False)
-
+    '''
+    
 if __name__ == "__main__":
     
     gpus = tf.config.experimental.list_physical_devices('GPU') #should limit gpu memory growth while using cuda.

@@ -84,7 +84,7 @@ def eval_loss(model, model_type, cce, x_set, y_set, batch_size, from_logits=Fals
     #sys.stdout.flush()
     return loss, acc
 
-def crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, batch_size=128, add_reg=True):
+def crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, batch_size=128, add_reg=True, L_A=[3, 5], L_W=[1, 7]):
     
     f = h5py.File(surf_path, 'r+')
     losses, accuracies = [], []
@@ -118,8 +118,8 @@ def crunch(surf_path, model, model_type, w, d, x_set, y_set, loss_key, acc_key, 
     for idx, coord in enumerate(coords):
         set_weights(model, w, d, coord)
         if 'qn' in model_type:
-            L_A=[3, 5] #[3, 5]
-            L_W=[1, 7] #[1, 7]
+            #L_A=[3, 5] #[3, 5]
+            #L_W=[1, 7] #[1, 7]
             model_conv = f_convert_model(model, tf.keras.optimizers.Nadam(), L_W=L_W, L_A=L_A, custom_obj=CUSTOM_OBJ)
             model_conv = weight_discretization(model_conv, L_CONV=L_W, L_FC=L_W)
             loss, acc = eval_loss(model_conv, model_type, cce, x_set, y_set, batch_size, from_logits=from_logits, add_reg=add_reg)

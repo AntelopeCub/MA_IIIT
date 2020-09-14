@@ -71,7 +71,14 @@ class Cyclic_LR_Scheduler():
 
 class build_model(object):
 
-    def __init__(self, model_type, dataset, l2_reg_rate=None, fc_type=None, pre_mode='norm'):
+    def __init__(self, 
+                 model_type, 
+                 dataset, 
+                 l2_reg_rate= None, 
+                 fc_type    = None, 
+                 pre_mode   = 'norm',
+                 L_A        = [3, 5],
+                 L_W        = [1, 7]):
 
         self.model_type = model_type
 
@@ -96,16 +103,19 @@ class build_model(object):
 
         self.fc_type = fc_type
 
+        self.L_A = L_A
+        self.L_W = L_W
+
         if model_type == 'vgg9':
             self.model = VGG9_no_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'vgg9_bn':
             self.model = VGG9_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'vgg9_qn':
-            self.model = f_build_vgg_qua(self.input_shape, self.l2_reg_rate, self.num_class, L_A=[3, 5], L_W=[1, 7], layers='7')
+            self.model = f_build_vgg_qua(self.input_shape, self.l2_reg_rate, self.num_class, L_A=self.L_A, L_W=self.L_W, layers='7')
         elif model_type == 'vgg16_bn':
             self.model = VGG16_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'vgg16_qn':
-            self.model = f_build_vgg_qua(self.input_shape, self.l2_reg_rate, self.num_class, L_A=[3, 5], L_W=[1, 7], layers='13')
+            self.model = f_build_vgg_qua(self.input_shape, self.l2_reg_rate, self.num_class, L_A=self.L_A, L_W=self.L_W, layers='13')
         elif model_type == 'resnet56':
             self.model = ResNet56(input_shape=self.input_shape, num_class=self.num_class, l2_reg=self.l2_reg)
         else:
