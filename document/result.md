@@ -1,0 +1,23 @@
+
+bitlength|model type|augment|train acc (%)|test acc (%)|baseline model test acc (%)
+:-:|:-:|:-:|:-:|:-:|:-:
+4|vgg9|auto|11.78|12.63|N/A
+6|vgg9|auto|87.83|93.59|N/A
+8|vgg9|auto|92.23|94.36|N/A
+32|vgg9|auto|92.32|94.36|95.26
+4|vgg16|auto|10.00|10.00|N/A
+6|vgg16|auto|88.99|93.96|N/A
+8|vgg16|auto|92.71|94.99|N/A
+32|vgg16|auto|93.12|94.78|95.61
+4|vgg9|base|9.40|9.53|N/A
+6|vgg9|base|95.57|91.47|N/A
+8|vgg9|base|97.75|93.19|N/A
+32|vgg9|base|97.92|93.05|N/A
+4|vgg16|base|10.00|10.00|N/A
+6|vgg16|base|95.71|92.35|N/A
+8|vgg16|base|98.15|94.10|N/A
+32|vgg16|base|98.23|94.21|N/A
+6|vgg9|none|85.78|75.22|N/A
+8|vgg9|none|99.95|87.54|N/A
+6|vgg16|none|98.58|84.85|N/A
+8|vgg16|none|100.00|86.32|N/A
