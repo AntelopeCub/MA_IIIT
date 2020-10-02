@@ -39,7 +39,7 @@ def main(model_type,
         ):
 
     try:
-        model = load_model(model_path)
+        model = load_model(model_path, custom_objects=CUSTOM_OBJ)
     except Exception as e:
         model = build_model(model_type, dataset, fc_type=fc_type, l2_reg_rate=l2_reg_rate, L_A=L_A, L_W=L_W).model
         model.load_weights(model_path)
