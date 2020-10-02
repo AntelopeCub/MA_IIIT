@@ -45,7 +45,7 @@ def main(model_type,
         model.load_weights(model_path)
     
     if dir_path == None: 
-        dir_path = model_path[:-3] + '_' + fig_type + '.h5'
+        dir_path = model_path[:-3] + '_' + fig_type + '_' + str(l_range[0]) + '_' + str(l_range[1]) + '.h5'
     
     if os.path.exists(dir_path):
         print("Direction file is already created.")
