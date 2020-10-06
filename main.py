@@ -120,6 +120,7 @@ def main(model_type,
     elif fig_type == '2D':
         plot_2D.plot_2d_contour(surf_path, surf_name=loss_key, vmin=0.1, vmax=10, vlevel=0.5, show=False)
     '''
+    return surf_path
     
 if __name__ == "__main__":
     

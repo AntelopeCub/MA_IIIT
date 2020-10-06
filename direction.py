@@ -17,6 +17,9 @@ def creat_random_direction(model):
     norm_direction = normalize_directions_for_weights(direction, weights)
     return norm_direction
 
+def creat_target_direction(weights1, weights2):
+    return [w2 - w1 for (w1, w2) in zip(weights1, weights2)]
+
 def get_weights(model):
     return [tf.convert_to_tensor(p) for p in model.weights]
 

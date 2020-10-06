@@ -160,3 +160,8 @@ test*.py
 /models
 *.pdf
 MA_IIIT.py
+
+# Google Drive files
+client_serets.json
+credentials.json
+settings.yaml
