@@ -1,3 +1,5 @@
+import re
+
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
@@ -121,7 +123,41 @@ def cal_angle(surf_path_list, surf_name='train_loss'):
         f.close()
         
         h5_to_vtp(surf_path, surf_name=surf_name+'_angle', zmax=1)
-    
+
+
+def eval_sharpness(surf_path_list, surf_name='train_loss'):
+
+    for surf_path in surf_path_list:
+        f = h5py.File(surf_path, 'r')
+        name_pattern = re.compile('5h\.(.*?)/', re.I)
+        file_name  = name_pattern.findall(surf_path[::-1])[0][::-1]
+        if surf_name in f.keys():
+            Z = np.array(f[surf_name][:])
+            shape = Z.shape
+            assert shape[0] % 2 == 1 and shape[1] % 2 == 1, 'Point amount of X/Y axis should be odd.'
+
+            center = (shape[0] // 2, shape[1] // 2)
+            Z_max = np.max(Z)
+            Z_ctr = Z[center[0]][center[1]]
+
+            dx, dy = np.gradient(Z)
+            dxx, dxy = np.gradient(dx)
+            dyx, dyy = np.gradient(dy)
+            nu = (1 + dx * dx) * dyy - 2 * dx * dy * dxy + (1 + dy * dy) * dxx
+            de = 2 * np.power((1 + dx * dx + dy * dy), 1.5)
+            curv = nu / de
+
+            sha1 = (Z_max - Z_ctr) / (1 + Z_ctr) * 100
+            sha2 = curv[center[0]][center[1]] * 100
+            sha3 = (Z_max - Z_ctr) * 100
+            
+            print('Evaluate sharpness of %s:' % file_name)
+            print('sharpness 1: %f,\tsharpness 2: %f,\tsharpness 3: %f' % (sha1, sha2, sha3))
+            print('------------------------------------------------------------------')
+        else:
+            raise Exception('%s is not in surface file: %s' % (surf_name, surf_path))
+        f.close()
+
 
 if __name__ == "__main__":
     
@@ -132,11 +168,20 @@ if __name__ == "__main__":
     #plot_3d_surface(surf_path, surf_name='train_loss', show=True)
     '''
 
-    surf_path_list = [        
-        'C:/Users/Rain/Desktop/surface/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_base_212_0.9486_weights_-0.2_0.2_same_surface_41_test_loss_add_reg=False.h5',
-        'C:/Users/Rain/Desktop/surface/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_auto_237_0.9561_weights_-0.2_0.2_same_surface_41_test_loss_add_reg=False.h5',        
+    surf_path_list = [
+        'D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar10_243_0.9123_weights_2D_-0.03_0.03_same_surface_7_train_loss_add_reg=False.h5',
+        'D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_base_180_0.9472_weights_2D_-0.03_0.03_same_surface_7_train_loss_add_reg=False.h5',
+        'D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_auto_246_0.9526_weights_2D_-0.03_0.03_same_surface_7_train_loss_add_reg=False.h5',
+        'D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar10_171_0.8944_weights_2D_-0.03_0.03_same_surface_7_train_loss_add_reg=False.h5',
+        'D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_base_212_0.9486_weights_2D_-0.03_0.03_same_surface_7_train_loss_add_reg=False.h5',
+        'D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_auto_237_0.9561_weights_2D_-0.03_0.03_same_surface_7_train_loss_add_reg=False.h5',
     ]
 
     #set_surface_zeros(surf_path_list=surf_path_list, surf_name='test_loss')
-    #cal_curv(surf_path_list=surf_path_list, surf_name='test_loss')
-    cal_angle(surf_path_list=surf_path_list, surf_name='test_loss')
+    #cal_curv(surf_path_list=surf_path_list, surf_name='train_loss')
+    #cal_angle(surf_path_list=surf_path_list, surf_name='test_loss')
+    eval_sharpness(surf_path_list=surf_path_list, surf_name='train_loss')
+    
+    #for surf_path in surf_path_list:
+    #    h5_to_vtp(surf_path, surf_name='train_loss', zmax=10)
+    
