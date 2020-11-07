@@ -19,7 +19,7 @@ import mpi4tf as mpi
 import plot_1D
 import plot_2D
 import scheduler
-
+from build_model import build_model
 
 if __name__ == "__main__":
     
@@ -29,30 +29,31 @@ if __name__ == "__main__":
 
     tf.random.set_seed(123)
 
-    dataset = 'cifar10'
-    load_mode = 'tfds'
+    dataset = 'svhn_equal'
+    load_mode = 'tfrd'
     batch_size = 128
-    aug_pol = 'baseline'
+    aug_pol = 'svhn_base'
     temp_file_path = ''
-    dot_num = 11
+    dot_num = 3
     set_y = True
 
     comm = mpi.setup_MPI()
     rank, nproc = comm.Get_rank(), comm.Get_size()
 
-    model_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_bn_aug.h5"
-    dir_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/directions/vgg9_bn_aug_2D.h5"
-    surf_path = "D:/Rain/text/Python/MA_IIIT/models/vgg9/surface/vgg9_bn_aug_2D_surface_mpi_test.h5"
+    model_path = "D:/Mitschke/Yanglin/MA_IIIT/models/resnet56/resnet56_128_norm_SGDNesterov_l2=0.0005_svhn_equal_077_0.9695_weights.h5"
+    dir_path = "D:/Mitschke/Yanglin/MA_IIIT/models/resnet56/resnet56_128_norm_SGDNesterov_l2=0.0005_svhn_equal_077_0.9695_weights_2D_-0.2_0.2_same.h5"
+    surf_path = "D:/Mitschke/Yanglin/MA_IIIT/models/resnet56/resnet56_128_norm_SGDNesterov_l2=0.0005_svhn_equal_077_0.9695_weights_2D_-0.2_0.2_same_mpi_test.h5"
 
-    model = tf.keras.models.load_model(model_path)
+    model = build_model('resnet56', dataset, fc_type='avg', l2_reg_rate=5e-4).model
+    model.load_weights(model_path)
     w = direction.get_weights(model)
     d = evaluation.load_directions(dir_path)    
 
     if rank == 0:
-        evaluation.setup_surface_file(surf_path, dir_path, set_y, num=dot_num)
+        evaluation.setup_surface_file(surf_path, dir_path, set_y, num=dot_num, l_range=(-0.2, 0.2))
         print("Loading temp dataset.")
         sys.stdout.flush()
-        temp_file_path = data_generator.set_temp_dataset(dataset, load_mode, aug_pol)
+        temp_file_path = data_generator.set_temp_dataset(dataset, load_mode, aug_pol, pre_mode='norm')
         begin_time = time.time()
     else:
         temp_file_path = ''

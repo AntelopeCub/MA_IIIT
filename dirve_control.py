@@ -7,12 +7,18 @@ def file_upload(upload_file_list, folder_id='1HE8bkkl9MVvPCYAGpoA9Y6pKhjeVVUOH')
     gauth = GoogleAuth()
     drive = GoogleDrive(gauth)
 
+    fail_list = []
     # Upload files to your Google Drive
     for upload_file in upload_file_list:
-        gfile = drive.CreateFile({'parents': [{'id': folder_id}]})
-        # Read file and set it as a content of this instance.
-        gfile.SetContentFile(upload_file)
-        gfile.Upload() # Upload the file.
+        try:
+            gfile = drive.CreateFile({'parents': [{'id': folder_id}]})
+            # Read file and set it as a content of this instance.
+            gfile.SetContentFile(upload_file)
+            gfile.Upload() # Upload the file.
+        except Exception as e:
+            fail_list.append(upload_file)
+
+    return fail_list
 
 
 if __name__ == "__main__":

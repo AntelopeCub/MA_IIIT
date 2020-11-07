@@ -182,6 +182,9 @@ def resnet_v2(input_shape, depth, num_classes=10, l2_reg=None):
 def ResNet56(input_shape=(32,32,3), num_class=10, l2_reg=None):
     return resnet_v1(input_shape=input_shape, depth=56, num_classes=num_class, l2_reg=l2_reg)
 
+def ResNet20(input_shape=(32,32,3), num_class=10, l2_reg=None):
+    return resnet_v1(input_shape=input_shape, depth=20, num_classes=num_class, l2_reg=l2_reg)
+
 if __name__ == "__main__":
-    model = ResNet56(l2_reg=tf.keras.regularizers.l2(l=5e-4))
+    model = ResNet20(l2_reg=tf.keras.regularizers.l2(l=5e-4))
     a = 1

@@ -15,7 +15,7 @@ from tensorflow.keras.optimizers import SGD
 
 import data_generator
 import data_loader
-from build_resnet import ResNet56
+from build_resnet import ResNet20, ResNet56
 from build_vgg import VGG9_BN, VGG9_QN, VGG16_BN, VGG16_QN, VGG9_no_BN
 from quantization.build_vgg_qn import f_build_vgg_qua
 
@@ -116,6 +116,8 @@ class build_model(object):
             self.model = VGG16_BN(self.input_shape, self.l2_reg, num_class=self.num_class, fc_type=self.fc_type)
         elif model_type == 'vgg16_qn':
             self.model = f_build_vgg_qua(self.input_shape, self.l2_reg_rate, self.num_class, L_A=self.L_A, L_W=self.L_W, layers='13')
+        elif model_type == 'resnet20':
+            self.model = ResNet20(input_shape=self.input_shape, num_class=self.num_class, l2_reg=self.l2_reg)
         elif model_type == 'resnet56':
             self.model = ResNet56(input_shape=self.input_shape, num_class=self.num_class, l2_reg=self.l2_reg)
         else:
