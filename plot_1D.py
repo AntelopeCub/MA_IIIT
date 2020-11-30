@@ -107,6 +107,6 @@ if __name__ == "__main__":
     #surf_path = "C:/Users/Rain/Desktop/surface/diff/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_base_180_0.9472_weights_1D_-1.0_2.0_diff3_surface_3001_train_loss_add_reg=False.h5"
     #plot_1d_loss_err(surf_path, xmin=-1.0, xmax=1.0, loss_max=5, log=False, show=True)
 
-    train_loss_path = 'C:/Users/Rain/Desktop/surface/diff/vgg9_qn_128_scale_Nadam_l2=0.00001_avg_cifar10_cifar_base_8bits_weights_1D_-1.0_2.0_diff3_surface_601_train_loss.h5'
-    test_loss_path  = 'C:/Users/Rain/Desktop/surface/diff/vgg9_qn_128_scale_Nadam_l2=0.00001_avg_cifar10_cifar_base_8bits_weights_1D_-1.0_2.0_diff3_surface_601_test_loss.h5'
+    train_loss_path = 'C:/Users/Rain/Desktop/surface/diff/vgg16_qn_128_scale_Nadam_l2=0.00001_avg_cifar10_cifar_base_8bits_weights_1D_-1.0_2.0_diff3_surface_601_train_loss.h5'
+    test_loss_path  = 'C:/Users/Rain/Desktop/surface/diff/vgg16_qn_128_scale_Nadam_l2=0.00001_avg_cifar10_cifar_base_8bits_weights_1D_-1.0_2.0_diff3_surface_601_test_loss.h5'
     plot_1d_loss_diff(train_loss_path, test_loss_path, show=True)

@@ -1,3 +1,4 @@
+import os
 import re
 
 import h5py
@@ -152,7 +153,8 @@ def eval_sharpness(surf_path_list, surf_name='train_loss'):
             sha3 = (Z_max - Z_ctr) * 100
             
             print('Evaluate sharpness of %s:' % file_name)
-            print('sharpness 1: %f,\tsharpness 2: %f,\tsharpness 3: %f' % (sha1, sha2, sha3))
+            #print('sharpness 1: %f,\tsharpness 2: %f,\tsharpness 3: %f' % (sha1, sha2, sha3))
+            print('sharpness 1: %f,\tsharpness 2: %f' % (sha1, sha2))
             print('------------------------------------------------------------------')
         else:
             raise Exception('%s is not in surface file: %s' % (surf_name, surf_path))
@@ -167,21 +169,34 @@ if __name__ == "__main__":
     plot_2d_contour(surf_path, surf_name='test_acc', vmin=0.1, vmax=15, vlevel=0.2, show=True)
     #plot_3d_surface(surf_path, surf_name='train_loss', show=True)
     '''
-
+    
     surf_path_list = [
-        'D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar10_243_0.9123_weights_2D_-0.03_0.03_same_surface_7_train_loss_add_reg=False.h5',
-        'D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_base_180_0.9472_weights_2D_-0.03_0.03_same_surface_7_train_loss_add_reg=False.h5',
-        'D:/Rain/text/Python/MA_IIIT/models/vgg9/vgg9_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_auto_246_0.9526_weights_2D_-0.03_0.03_same_surface_7_train_loss_add_reg=False.h5',
-        'D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar10_171_0.8944_weights_2D_-0.03_0.03_same_surface_7_train_loss_add_reg=False.h5',
-        'D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_base_212_0.9486_weights_2D_-0.03_0.03_same_surface_7_train_loss_add_reg=False.h5',
-        'D:/Rain/text/Python/MA_IIIT/models/vgg16/vgg16_bn_128_norm_SGDNesterov_l2=0.0005_avg_cifar_auto_237_0.9561_weights_2D_-0.03_0.03_same_surface_7_train_loss_add_reg=False.h5',
+        'C:/Users/Rain/Desktop/MA_fig/surface/baseline/resnet/resnet56_128_norm_SGDNesterov_l2=0.0005_svhn_equal_077_0.9695_weights_2D_-0.2_0.2_same_surface_41_test_loss_add_reg=False.h5',
+        'C:/Users/Rain/Desktop/MA_fig/surface/baseline/resnet/resnet56_128_norm_SGDNesterov_l2=0.0005_svhn_base_106_0.9741_weights_2D_-0.2_0.2_same_surface_41_test_loss_add_reg=False.h5',
+        'C:/Users/Rain/Desktop/MA_fig/surface/baseline/resnet/resnet56_128_norm_SGDNesterov_l2=0.0005_svhn_auto_111_0.9822_weights_2D_-0.2_0.2_same_surface_41_test_loss_add_reg=False.h5',
     ]
-
+    
+    eval_sharpness(surf_path_list=surf_path_list, surf_name='test_loss')
     #set_surface_zeros(surf_path_list=surf_path_list, surf_name='test_loss')
     #cal_curv(surf_path_list=surf_path_list, surf_name='train_loss')
     #cal_angle(surf_path_list=surf_path_list, surf_name='test_loss')
-    eval_sharpness(surf_path_list=surf_path_list, surf_name='train_loss')
+    
     
     #for surf_path in surf_path_list:
     #    h5_to_vtp(surf_path, surf_name='train_loss', zmax=10)
-    
+
+    '''
+    root_path = 'C:/Users/Rain/Desktop/MA_fig/surface/baseline/tmp/'
+    surf_path_list = os.listdir(root_path)
+    surf_path_list = [root_path+path for path in surf_path_list if path.endswith('.h5')]
+    '''
+    '''
+    for path in surf_path_list:
+        if 'train_loss' in path:
+            h5_to_vtp(path, surf_name='train_loss', zmax=10)
+        elif 'test_loss' in path:
+            h5_to_vtp(path, surf_name='test_loss', zmax=10)
+            #h5_to_vtp(path, surf_name='test_acc', zmax=10)
+        else:
+            raise Exception("Unknown surf name!")
+    '''

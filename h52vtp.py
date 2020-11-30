@@ -113,7 +113,13 @@ def h5_to_vtp(surf_file, surf_name='train_loss', log=False, zmax=-1, interp=-1):
 
     # <PointData>
     output_file.write('      <PointData>\n')
-    output_file.write('        <DataArray type="Float32" Name="zvalue" NumberOfComponents="1" format="ascii" RangeMin="{}" RangeMax="{}">\n'.format(min_value_array[2], max_value_array[2]))
+    if 'loss' in surf_name:
+        output_file.write('        <DataArray type="Float32" Name="Loss" NumberOfComponents="1" format="ascii" RangeMin="{}" RangeMax="{}">\n'.format(min_value_array[2], max_value_array[2]))
+    elif 'acc' in surf_name:
+        output_file.write('        <DataArray type="Float32" Name="Acc" NumberOfComponents="1" format="ascii" RangeMin="{}" RangeMax="{}">\n'.format(min_value_array[2], max_value_array[2]))
+    else:
+        output_file.write('        <DataArray type="Float32" Name="zvalue" NumberOfComponents="1" format="ascii" RangeMin="{}" RangeMax="{}">\n'.format(min_value_array[2], max_value_array[2]))
+
     for vertexcount in range(number_points):
         if (vertexcount % 6) is 0:
             output_file.write('          ')
@@ -130,7 +136,7 @@ def h5_to_vtp(surf_file, surf_name='train_loss', log=False, zmax=-1, interp=-1):
     # <CellData>
     output_file.write('      <CellData>\n')
     if (show_polys and not show_points):
-        output_file.write('        <DataArray type="Float32" Name="averaged zvalue" NumberOfComponents="1" format="ascii" RangeMin="{}" RangeMax="{}">\n'.format(avg_min_value, avg_max_value))
+        output_file.write('        <DataArray type="Float32" Name="averaged value" NumberOfComponents="1" format="ascii" RangeMin="{}" RangeMax="{}">\n'.format(avg_min_value, avg_max_value))
         for vertexcount in range(number_polys):
             if (vertexcount % 6) is 0:
                 output_file.write('          ')
